@@ -1,12 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="150" height="40" viewBox="0 0 150 40" fill="none"><style>
-text{font-family:'Segoe UI', Ubuntu, 'Helvetica Neue', Arial, sans-serif}
-.mono{font-family:'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, monospace}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="40" viewBox="0 0 150 40" fill="none"><style>@font-face{font-family:'xInter';font-style:normal;font-weight:600;src:url(data:font/woff2;base64,d09GMgABAAAAAAYsABAAAAAACtwAAAXRAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgWocbgZgP1NUQVRaAGQRCAqHXIZeCxYAATYCJAMoBCAFhHQHIAwHGy4JyMSH/7b15w53EId0K9lqrL66GWAFEqXCKvYGulGFG5Xsy3BHeBVf3WP1+6kNkI2LpaeiImxkpPrZd8ELogNyVCKVClshU2GAcDzJGlVZ4aJkldBdy22dmNKZFbEL+TMIAkAFtciBSBwVPR0QkIFC0Gkz5pkw2tJSV40Bjjqbh7NUm/21KdD+/v+GVhTzCTiPra4WfXjWLEguE82ZIhoKEKBdBTjMm7qFG/ngIYfgoRd2RqVvAelnCNhGkLoOHwcJ5psFDjLwwYjssBIHSftoMHCsIWbU4Hgq0uurbahBL38U1SxMZBSoDoC8AjpR+Q1YF92UMoq7KZ/LFYIH+Hj6JoCDSZCD4iXuGJTBy5ZbSj8DJ/VAp0TuWUuM840IQQ9/VOj/HoDiY263xseuSaqcp17VQ7UBpnOvaOZEcF5ffStJgQk3OZx+QkBcfnM1YeAwHH0ghwwcOJLzcLx8gyRwhdTSJJUsPUL/okCtvUCxqKyDTv6tHrkwwwIPfPBLUkPjvUX6SnoidUpB6YC0V9o1fQ23n4BIErQ8PV48fFV/E0nLkrchSrtwaCYRPFz8WoFSlVygclUvQRjbY3QUpTpdXx3VtWjatM1QE6GAqKAs5tQyk0CSuQKURAmB5HekkF9BexIyVTYJ9VlnK9u0m7q7ERBFE7rTY4Uq9aYIaQ+HBRWRIClwi3ljOEzaI5FIQSTyNuk4YaP4zqD8SCSi3DRqDhWIcFEU83u/iex+RRRHviCKCHR312wMf0DaP+zTyTMdDXeNk5cnqNwUeRYZmieKouiQKR1qp+BsU7eo7QWuEbX3EXhvTlpRTppe1KaE8kqka0fCxnB4skA9fW5qg4aUqBWBd5WbXh6Td5P7PpLdHrwKxWdXh64HYywSXpHD2HuRlWDIfhIKhKQnYAgFGGOBUCh7JWOfsaC0koWC9Wsq9aySrcz+jLFA8MlK8b/G9srtjDFfJfaC70rr7La5LnlLpgf8C2fptAtkOwpKjy31e+985row/5ORuzuWFk3NcTdnGic9Vc/0xrOK3IIWb3NPPO3jPjfPvKe2YkZb8+x9oxZHVQot2lWj+eQJ8/LHspzyMU/EHw36qg2Bx9m+hcGRawoW7/J989dBYWv+ooChV2ixP5s5s1a/+nSOelZ0x76yEQkswWBgpmGo7XPih+0d3MXLHfSHbSfKjk1ZXmxqj1n8c9z5sTOuzR8wpaSpMv2ky5F+qqmyxLBg4PPjZh/+OS7GaFq1ojQYi6aK9HE7n4v9bnTS7STwXRR8172af6/c+e0mZv3LTv6wrYNevtjB/bD9RFdJszntlN2RdqrZXFLSaE476bSnnWo0Y0Mn5Pj/Xkzy7JIVuZaOt1e14v7dJvLO2jUVK9nckmSlUWYpaChPP+l0ph1vKC3MbyjKCNbUZJxoLMbYX8vfaHvjaDSdlJmS3uNsz7GvXCwSxnVeOLabBd9CkTtpVRtfoc34TSFTXKp/0bhuezL/yF/ifyW9ziu+/Nhj3ARiOjvt7f9L/L2+13nFh/seAs/ILH4G9tL9mEfPoYhuxUb6KYro/9jIPUMvbjSX5ejm/QJWQwUfe17lUrWkwWUGk6TRQnU7SSoEwSAyIMhBlqhAyBCHD0Zpt+CRhJNCjkFY79AgCUuGCIEKM0AkQIckkYJ+GCJSoUCfMoOK7QA4h0G9fAm8qIEZtZgNP8yohgsWxCKBBaaxMEID6HV6GOFCK2wwwoYa2ZwLb9uKAtig64AT/mC2Hz7UIw1T5OO98MGGWtjhRS1Pi6Nxej1smAwv6uDAbHy8DXWYtDDnY6F6AZNfq0cCJsMAA2KRDgdc8GMSkjzXBCTDAgOqVg3Y+yUwYj6MSN9CAQW2dqAB1TCjbpB7PU8lFGoR/ITLesRt89Mk6GGCEzboJ5+2CHXwwg0bLAPLOWi4TSA+vh56jL1lRGq+Ew2owmRYHhFPGdiuQT2mgH9hHvfz8mqb/X8Ll+D23iXSmqt0CwA=) format('woff2')}
+text{font-family:'xInter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif}
+.h{font-family:'xJost', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif}
+.mono{font-family:'xMono', Consolas, Menlo, 'Liberation Mono', monospace}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes ring{0%{r:6;opacity:.9}100%{r:22;opacity:0}}
+@keyframes ring{0%{r:5;opacity:.8}100%{r:16;opacity:0}}
 @keyframes dash{to{stroke-dashoffset:-400}}
-@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
-</style><defs></defs><rect x="1" y="1" width="148" height="38" rx="20" fill="#0E1D3E" stroke="#284578"/><text x="75.0" y="25" text-anchor="middle" font-size="13" font-weight="600" fill="#B7C6E6">&#8593;  Back to top</text></svg>
+</style><defs></defs><rect x="1" y="1" width="148" height="38" rx="20" fill="#FFFFFF" stroke="#E3E8E5"/><path d="M35.659423828125 26V14M29.659423828125 19.5l6-6 6 6" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="49.7" y="25" font-size="13" font-weight="600" fill="#43524A">Back to top</text></svg>
