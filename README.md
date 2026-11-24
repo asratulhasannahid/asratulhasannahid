@@ -40,7 +40,7 @@
 </p>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=wordpress,php,js,ts,react,nextjs,tailwind,nodejs,nestjs,mysql,postgres,prisma,redis,docker,aws,linux,nginx,githubactions,git,figma&perline=10&theme=dark" />
+  <img src="https://skillicons.dev/icons?i=wordpress,php,js,ts,react,nextjs,tailwind,nodejs,nestjs,mysql,postgres,prisma,redis,docker,aws,linux,nginx,githubactions,git,figma&perline=10&theme=light" />
 </p>
 
 <br/>
@@ -60,16 +60,16 @@
 <img src="assets/h-stats.svg" width="100%" alt="GitHub Stats" />
 
 <p align="center">
-  <img height="175" src="https://github-readme-stats.vercel.app/api?username=asratulhasannahid&show_icons=true&hide_border=true&count_private=true&include_all_commits=true&bg_color=0E1D3E&title_color=5CC8FF&icon_color=FFB547&text_color=B7C6E6" />
-  <img height="175" src="https://github-readme-stats.vercel.app/api/top-langs/?username=asratulhasannahid&layout=compact&hide_border=true&langs_count=8&bg_color=0E1D3E&title_color=5CC8FF&text_color=B7C6E6" />
+  <img height="175" src="https://github-readme-stats.vercel.app/api?username=asratulhasannahid&show_icons=true&count_private=true&include_all_commits=true&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" />
+  <img height="175" src="https://github-readme-stats.vercel.app/api/top-langs/?username=asratulhasannahid&layout=compact&langs_count=8&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" />
 </p>
 
 <p align="center">
-  <img src="https://streak-stats.demolab.com?user=asratulhasannahid&hide_border=true&background=0E1D3E&ring=5CC8FF&fire=FFB547&currStreakLabel=5CC8FF&sideLabels=B7C6E6&currStreakNum=EAF1FF&sideNums=EAF1FF&dates=8DA0CA&stroke=284578" />
+  <img src="https://streak-stats.demolab.com?user=asratulhasannahid&background=FFFFFF&border=E3E8E5&stroke=E3E8E5&ring=16A34A&fire=22C55E&currStreakLabel=16A34A&sideLabels=43524A&currStreakNum=0F1A14&sideNums=0F1A14&dates=6B7A72&border_radius=14" />
 </p>
 
 <p align="center">
-  <img src="https://github-readme-activity-graph.vercel.app/graph?username=asratulhasannahid&bg_color=0E1D3E&color=B7C6E6&title_color=5CC8FF&line=5CC8FF&point=FFB547&area=true&area_color=1E4A8F&hide_border=true&radius=16" width="100%" />
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=asratulhasannahid&bg_color=FFFFFF&color=43524A&title_color=16A34A&line=16A34A&point=15803D&area=true&area_color=DCFCE7&hide_border=false&radius=14" width="100%" />
 </p>
 
 <p align="center">
@@ -87,10 +87,10 @@
 
 <!-- ✏️ REPO_NAME_1..4 er jaygay tomar asol repo er nam dao -->
 <p align="center">
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_1"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_1&hide_border=true&bg_color=0E1D3E&title_color=5CC8FF&icon_color=FFB547&text_color=B7C6E6" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_2"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_2&hide_border=true&bg_color=0E1D3E&title_color=5CC8FF&icon_color=FFB547&text_color=B7C6E6" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_3"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_3&hide_border=true&bg_color=0E1D3E&title_color=5CC8FF&icon_color=FFB547&text_color=B7C6E6" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_4"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_4&hide_border=true&bg_color=0E1D3E&title_color=5CC8FF&icon_color=FFB547&text_color=B7C6E6" /></a>
+  <a href="https://github.com/asratulhasannahid/REPO_NAME_1"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_1&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/REPO_NAME_2"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_2&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/REPO_NAME_3"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_3&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/REPO_NAME_4"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_4&bg_color=FFFFFF&title_color=16A34A&icon_color=16A34A&text_color=43524A&border_color=E3E8E5&border_radius=14" /></a>
 </p>
 
 <br/>
@@ -117,5 +117,5 @@
 <p align="center">
   <a href="#top"><img src="assets/nav-top.svg" height="38" alt="Back to top" /></a>
   &nbsp;
-  <img src="https://komarev.com/ghpvc/?username=asratulhasannahid&label=VISITORS&color=1E4A8F&style=for-the-badge" height="38" />
+  <img src="https://komarev.com/ghpvc/?username=asratulhasannahid&label=VISITORS&color=16A34A&style=for-the-badge" height="38" />
 </p>
