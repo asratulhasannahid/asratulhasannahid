@@ -36,11 +36,14 @@ no external images). Any custom font must be **embedded as base64 @font-face** i
 - `build.mjs` creates every SVG (Node 18+, zero dependencies; this Windows machine has Node but no Python, and
   installing Python tooling was blocked, so the old `build.py` was ported and removed). Edit CONFIG and the
   component functions, then run `node build.mjs`.
-- Fonts: Jost (headings, class `h`), Inter (body, default), JetBrains Mono (class `mono`). The build asks the
+- Fonts: Jost (headings, class `h`), Poppins (body, default; the user asked for it instead of Inter), JetBrains Mono (class `mono`). The build asks the
   Google Fonts CSS API with `&text=` for a woff2 subset of exactly the characters each (family, weight) uses
   (worked out by parsing the SVG's <text>/<tspan>), and embeds it as base64 @font-face. It also downloads full
   static TTFs to measure real text widths (`tw()`, `fit()`), so layout uses true widths. Everything is cached
-  in `.cache/fonts` (gitignored).
+  in `.cache/fonts` (gitignored). Poppins has no arrow glyphs, so arrows are drawn as paths.
+- Icons: `icons/` holds vendored Simple Icons (`si-*`, CC0, brand logos) and Lucide (`lu-*`, ISC) SVGs; `icon()` in
+  build.mjs inlines their paths. The user asked for logos/vectors instead of "WP/SH/FS" text. Don't hotlink images.
+- Nav buttons are shown at `height="40"` so all six fit one row in GitHub's ~845px README column.
 - **Never hand-edit files in `assets/`.** They are regenerated.
 - Clickable navigation: each nav button is its own SVG wrapped in `<a href="#section">`, and each section
   has `<a name="section"></a>` before it.

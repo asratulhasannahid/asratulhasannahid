@@ -7,12 +7,12 @@
 
 <!-- ======================= NAVBAR ======================= -->
 <p align="center">
-  <a href="#about"><img src="assets/nav-about.svg" height="44" alt="About" /></a>
-  <a href="#stack"><img src="assets/nav-stack.svg" height="44" alt="Tech Stack" /></a>
-  <a href="#services"><img src="assets/nav-services.svg" height="44" alt="What I Do" /></a>
-  <a href="#stats"><img src="assets/nav-stats.svg" height="44" alt="Stats" /></a>
-  <a href="#projects"><img src="assets/nav-projects.svg" height="44" alt="Projects" /></a>
-  <a href="#contact"><img src="assets/nav-contact.svg" height="44" alt="Contact" /></a>
+  <a href="#about"><img src="assets/nav-about.svg" height="40" alt="About" /></a>
+  <a href="#stack"><img src="assets/nav-stack.svg" height="40" alt="Tech Stack" /></a>
+  <a href="#services"><img src="assets/nav-services.svg" height="40" alt="What I Do" /></a>
+  <a href="#stats"><img src="assets/nav-stats.svg" height="40" alt="Stats" /></a>
+  <a href="#projects"><img src="assets/nav-projects.svg" height="40" alt="Projects" /></a>
+  <a href="#contact"><img src="assets/nav-contact.svg" height="40" alt="Contact" /></a>
 </p>
 
 <p align="center">

@@ -6,7 +6,7 @@
  *       All SVGs are written to ./assets/
  *
  * Zero dependencies (Node 18+). SVGs shown through <img> cannot load external files, so the
- * fonts (Jost for headings, Inter for body, JetBrains Mono for code — all OFL, from Google Fonts)
+ * fonts (Jost for headings, Poppins for body, JetBrains Mono for code — all OFL, from Google Fonts)
  * are subset to exactly the characters each SVG uses and embedded as base64 woff2.
  * Downloads are cached in .cache/fonts, so rebuilding without changes works offline.
  */
@@ -40,12 +40,12 @@ const HEAD = G_D, HEAD_SUB = MUTE;
 
 // ---------------------------------------------------------------- FONTS
 const FAMILIES = {
-  inter: { google: "Inter", css: "xInter", fallback: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" },
+  body: { google: "Poppins", css: "xPoppins", fallback: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" },
   jost: { google: "Jost", css: "xJost", fallback: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" },
   mono: { google: "JetBrains Mono", css: "xMono", fallback: "Consolas, Menlo, 'Liberation Mono', monospace" },
 };
 // faces whose metrics are loaded for text measuring
-const MEASURED = { inter: [400, 500, 600, 700, 800], jost: [500, 600, 700], mono: [400] };
+const MEASURED = { body: [400, 500, 600, 700], jost: [500, 600, 700], mono: [400] };
 const UA_WOFF2 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 const UA_TTF = "curl/8.0";
 
@@ -139,7 +139,7 @@ const unesc = (s) =>
     .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
 
 /** Real text width in px, measured from the font file. `s` may contain XML entities. */
-function tw(s, size, wt = 400, fam = "inter", letterSpacing = 0) {
+function tw(s, size, wt = 400, fam = "body", letterSpacing = 0) {
   const m = METRICS[fam + wt];
   if (!m) throw new Error(`Add ${fam} ${wt} to MEASURED`);
   const chars = [...unesc(s)];
@@ -147,7 +147,7 @@ function tw(s, size, wt = 400, fam = "inter", letterSpacing = 0) {
 }
 
 /** Largest font size (≤ size) at which `s` fits in maxW. */
-const fit = (s, maxW, size, wt = 400, fam = "inter") => Math.min(size, +(size * maxW / tw(s, size, wt, fam)).toFixed(2));
+const fit = (s, maxW, size, wt = 400, fam = "body") => Math.min(size, +(size * maxW / tw(s, size, wt, fam)).toFixed(2));
 
 /** Works out which (family, weight) faces an SVG uses and the characters of each. */
 function fontUsage(svgStr) {
@@ -158,7 +158,7 @@ function fontUsage(svgStr) {
   while ((m = re.exec(svgStr))) {
     if (m[2]) {
       if (m[1]) { stack.pop(); continue; }
-      const parent = stack.at(-1) || { fam: "inter", wt: 400 };
+      const parent = stack.at(-1) || { fam: "body", wt: 400 };
       const cls = ((m[3].match(/\bclass="([^"]*)"/) || [])[1] || "").split(/\s+/);
       const fam = cls.includes("mono") ? "mono" : cls.includes("h") ? "jost" : parent.fam;
       const wm = m[3].match(/\bfont-weight="(\d+)"/);
@@ -188,7 +188,7 @@ async function embedFonts(svgStr) {
 // ---------------------------------------------------------------- SVG HELPERS
 const ff = (f) => `'${FAMILIES[f].css}', ${FAMILIES[f].fallback}`;
 const BASE_CSS = `/*FONTS*/
-text{font-family:${ff("inter")}}
+text{font-family:${ff("body")}}
 .h{font-family:${ff("jost")}}
 .mono{font-family:${ff("mono")}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
@@ -207,6 +207,19 @@ const f0 = (n) => (+n).toFixed(0);
 const svg = (w, h, body, css = "", defs = "") =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" fill="none">` +
   `<style>${BASE_CSS}${css}</style><defs>${defs}</defs>${body}</svg>`;
+
+/** Inline vector icon from ./icons (si-* = Simple Icons, filled; lu-* = Lucide, stroked), drawn in a size x size box. */
+const ICONS = {};
+function icon(name, x, y, size, color, extra = "") {
+  if (!ICONS[name]) {
+    const raw = readFileSync(join(ROOT, "icons", `${name}.svg`), "utf8").replace(/<!--[\s\S]*?-->/g, "");
+    const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "").replace(/<title>[\s\S]*?<\/title>/, "").trim();
+    ICONS[name] = { inner, stroke: name.startsWith("lu-") };
+  }
+  const { inner, stroke } = ICONS[name];
+  const paint = stroke ? `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"` : `fill="${color}"`;
+  return `<g transform="translate(${(+x).toFixed(1)} ${(+y).toFixed(1)}) scale(${(size / 24).toFixed(4)})" ${paint} ${extra}>${inner}</g>`;
+}
 
 const PAGES = [];
 const save = (name, content) => PAGES.push([name, content]);
@@ -308,12 +321,15 @@ function hero() {
     );
   });
   b.push("</g>");
-  b.push(`<text class="in4" x="${L}" y="310" font-size="15" fill="${MUTE}">2+ years shipping fast, secure web apps, stores &amp; CMS sites.</text>`);
-  const b1 = "See what I do &#8594;", b2 = "Let&#8217;s connect";
-  const b1w = tw(b1, 14.5, 600) + 44, b2w = tw(b2, 14.5, 600) + 40;
+  const desc = "2+ years shipping fast, secure web apps, stores &amp; CMS sites.";
+  b.push(`<text class="in4" x="${L}" y="310" font-size="${fit(desc, 500, 15)}" fill="${MUTE}">${desc}</text>`);
+  const b1 = "See what I do", b2 = "Let&#8217;s connect";
+  const t1 = tw(b1, 14.5, 600), b1w = t1 + 22 + 20 + 22, b2w = tw(b2, 14.5, 600) + 40;
+  const ax = L + 22 + t1 + 9; // vector arrow after the label
   b.push(`<g class="in5">
       <rect x="${L}" y="340" width="${f0(b1w)}" height="44" rx="22" fill="${G}"/>
-      <text x="${f0(L + b1w / 2)}" y="367" text-anchor="middle" font-size="14.5" font-weight="600" fill="#06140B">${b1}</text>
+      <text x="${L + 22}" y="367" font-size="14.5" font-weight="600" fill="#06140B">${b1}</text>
+      <path d="M${ax.toFixed(1)} 362h11M${(ax + 6.5).toFixed(1)} 357.5l4.5 4.5-4.5 4.5" stroke="#06140B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <rect x="${f0(L + b1w + 12)}" y="340" width="${f0(b2w)}" height="44" rx="22" fill="${CARD}" stroke="${LINE2}"/>
       <text x="${f0(L + b1w + 12 + b2w / 2)}" y="367" text-anchor="middle" font-size="14.5" font-weight="600" fill="${INK}">${b2}</text></g>`);
 
@@ -368,14 +384,21 @@ function ticker() {
   const W = 1000, H = 54;
   const items = ["WordPress", "Shopify", "Liquid", "PHP", "Headless CMS", "Next.js", "React", "TypeScript",
     "NestJS", "PostgreSQL", "Prisma", "Redis", "BullMQ", "Docker", "AWS", "Linux", "Nginx", "GitHub Actions"];
+  const logos = { WordPress: "si-wordpress", Shopify: "si-shopify", PHP: "si-php", "Headless CMS": "lu-layout-template",
+    "Next.js": "si-nextdotjs", React: "si-react", TypeScript: "si-typescript", NestJS: "si-nestjs", PostgreSQL: "si-postgresql",
+    Prisma: "si-prisma", Redis: "si-redis", BullMQ: "lu-layers-3", Docker: "si-docker", AWS: "si-amazonwebservices",
+    Linux: "si-linux", Nginx: "si-nginx", "GitHub Actions": "si-githubactions" };
+  const IS = 18, IG = 9; // icon size, icon-to-text gap
   const xs = [];
   let x = 0;
-  for (const t of items) { xs.push(x); x += tw(t, 16, 500, "jost") + 44; }
+  for (const t of items) { xs.push(x); x += (logos[t] ? IS + IG : 14) + tw(t, 16, 500, "jost") + 40; }
   const GAP = Math.round(x);
   const row = (off) =>
     items.map((t, i) => {
-      const px = xs[i] + off, tx = px + tw(t, 16, 500, "jost");
-      return `<text class="h" x="${f0(px)}" y="32.5" font-size="16" font-weight="500" fill="${INK2}">${esc(t)}</text><circle cx="${(tx + 22).toFixed(1)}" cy="27" r="2.5" fill="${G}"/>`;
+      const px = xs[i] + off;
+      const mark = logos[t] ? icon(logos[t], px, 18, IS, G_L) : `<circle cx="${(px + 4).toFixed(1)}" cy="27" r="3" fill="${G_L}"/>`;
+      const tx = px + (logos[t] ? IS + IG : 14);
+      return mark + `<text class="h" x="${f0(tx)}" y="32.5" font-size="16" font-weight="500" fill="${INK2}">${esc(t)}</text>`;
     }).join("");
   const defs =
     `<linearGradient id="edge" x1="0" x2="1"><stop offset="0" stop-color="${CARD}"/><stop offset=".08" stop-color="${CARD}" stop-opacity="0"/>` +
@@ -444,22 +467,31 @@ function about() {
   b.push(`<text class="mono" x="30" y="${eh - 10}" font-size="11" fill="${MUTE}" xml:space="preserve">main   UTF-8   TypeScript   Ln 10, Col 3</text>`);
   b.push(`<rect x="1.5" y="1.5" width="${ew - 1}" height="${eh - 1}" rx="16" stroke="${LINE}"/>`);
   // stat cards, 2 x 2
-  const cards = [["2+", "Years", "building for the web", G_L],
-    ["WP", "WordPress", "themes, plugins &amp; speed", WP],
-    ["SH", "Shopify", "Liquid theme development", SHOP],
-    ["FS", "Full-Stack", "Next.js · NestJS · PostgreSQL", G_L]];
+  // [icon, title, subtitle, color, tag]
+  const cards = [["lu-calendar-check", "2+ Years", "building for the web", G_L, "EXP"],
+    ["si-wordpress", "WordPress", "themes, plugins &amp; speed", WP, "CMS"],
+    ["si-shopify", "Shopify", "Liquid theme development", SHOP, "STORE"],
+    ["lu-layers-3", "Full-Stack", "Next.js · NestJS · PostgreSQL", G_L, "APPS"]];
   const gx = 16, x0 = ew + 1 + 16, cw = (W - 1 - x0 - gx) / 2, ch = (eh - 16) / 2;
-  cards.forEach(([big, title, sub, col], i) => {
+  let cdefs = "";
+  cards.forEach(([ic, title, sub, col, tag], i) => {
     const x = x0 + (i % 2) * (cw + gx), y = 1 + Math.floor(i / 2) * (ch + 16);
+    cdefs += `<clipPath id="cc${i}"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="16"/></clipPath>` +
+      `<radialGradient id="cg${i}" cx="1" cy="1" r=".9"><stop offset="0" stop-color="${col}" stop-opacity=".14"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>`;
     b.push(
-      `<g class="c${i + 1}"><rect x="${x + 0.5}" y="${y + 0.5}" width="${cw - 1}" height="${ch - 1}" rx="16" fill="${CARD}" stroke="${LINE}"/>` +
-        `<rect x="${x + 22}" y="${y + 22}" width="26" height="3" rx="1.5" fill="${col}"/>` +
-        `<text class="h" x="${x + 21}" y="${y + 78}" font-size="38" font-weight="700" fill="${col}">${big}</text>` +
-        `<text x="${x + 22}" y="${y + 114}" font-size="16" font-weight="600" fill="${INK}">${title}</text>` +
-        `<text x="${x + 22}" y="${y + 137}" font-size="${fit(sub, cw - 44, 12.5)}" fill="${MUTE}">${sub}</text></g>`,
+      `<g class="c${i + 1}"><rect x="${x + 0.5}" y="${y + 0.5}" width="${cw - 1}" height="${ch - 1}" rx="16" fill="${CARD}"/>` +
+        // soft corner glow + big watermark logo, clipped to the card
+        `<g clip-path="url(#cc${i})"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" fill="url(#cg${i})"/>` +
+        icon(ic, x + cw - 92, y + ch - 86, 118, col, `opacity=".09"`) + `</g>` +
+        `<rect x="${x + 0.5}" y="${y + 0.5}" width="${cw - 1}" height="${ch - 1}" rx="16" stroke="${LINE}"/>` +
+        `<rect x="${x + 20}" y="${y + 20}" width="48" height="48" rx="13" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-opacity=".35"/>` +
+        icon(ic, x + 32, y + 32, 24, col) +
+        `<text class="mono" x="${x + cw - 20}" y="${y + 36}" text-anchor="end" font-size="10.5" fill="${MUTE}" letter-spacing="1">${tag}</text>` +
+        `<text class="h" x="${x + 20}" y="${y + 112}" font-size="20" font-weight="600" fill="${INK}">${title}</text>` +
+        `<text x="${x + 20}" y="${y + 136}" font-size="${fit(sub, cw - 40, 12.5)}" fill="${MUTE}">${sub}</text></g>`,
     );
   });
-  save("about.svg", svg(W, H, b.join(""), css, defs));
+  save("about.svg", svg(W, H, b.join(""), css, defs + cdefs));
 }
 
 // --------------------------------------------------------------- STACK
@@ -518,25 +550,25 @@ function stack() {
 function services() {
   const W = 1000;
   const items = [
-    ["WP", "WordPress Development", ["Custom themes &amp; plugins", "Speed &amp; Core Web Vitals", "Server setup &amp; hardening"]],
-    ["SH", "Shopify Development", ["Liquid theme development", "Store customization", "Third-party app integration"]],
-    ["HL", "Headless CMS", ["WordPress as a backend", "Next.js frontends", "SEO-friendly, blazing fast"]],
-    ["FS", "Full-Stack Apps", ["Next.js + NestJS", "PostgreSQL + Prisma", "Auth, payments &amp; webhooks"]],
-    ["API", "Backend &amp; APIs", ["REST APIs with Swagger docs", "BullMQ queues &amp; Redis caching", "Tested &amp; secure by default"]],
-    ["OPS", "DevOps &amp; Cloud", ["Docker &amp; Docker Compose", "AWS: EC2, RDS, S3", "CI/CD with GitHub Actions"]],
+    ["si-wordpress", "WordPress Development", ["Custom themes &amp; plugins", "Speed &amp; Core Web Vitals", "Server setup &amp; hardening"], WP],
+    ["si-shopify", "Shopify Development", ["Liquid theme development", "Store customization", "Third-party app integration"], SHOP],
+    ["lu-layout-template", "Headless CMS", ["WordPress as a backend", "Next.js frontends", "SEO-friendly, blazing fast"], G_L],
+    ["lu-layers-3", "Full-Stack Apps", ["Next.js + NestJS", "PostgreSQL + Prisma", "Auth, payments &amp; webhooks"], G_L],
+    ["lu-braces", "Backend &amp; APIs", ["REST APIs with Swagger docs", "BullMQ queues &amp; Redis caching", "Tested &amp; secure by default"], G_L],
+    ["lu-cloud", "DevOps &amp; Cloud", ["Docker &amp; Docker Compose", "AWS: EC2, RDS, S3", "CI/CD with GitHub Actions"], G_L],
   ];
   const g = 16, cw = (W - 2 * g) / 3, ch = 214;
   const H = 2 * ch + g;
   let css = "";
   for (let i = 0; i < 6; i++) css += `.s${i}{animation:up .7s ease both ${(0.1 + i * 0.1).toFixed(2)}s}`;
   const b = [];
-  items.forEach(([ic, title, pts], i) => {
+  items.forEach(([ic, title, pts, col], i) => {
     const x = (i % 3) * (cw + g), y = Math.floor(i / 3) * (ch + g);
     b.push(
       // position on the outer group: the CSS fade-in animates `transform`, which would override a transform attribute
       `<g transform="translate(${x.toFixed(1)} ${y})"><g class="s${i}"><rect x=".5" y=".5" width="${(cw - 1).toFixed(1)}" height="${ch - 1}" rx="16" fill="${CARD}" stroke="${LINE}"/>` +
-        `<rect x="22" y="22" width="44" height="44" rx="12" fill="${G}" fill-opacity=".1" stroke="${G}" stroke-opacity=".3"/>` +
-        `<text class="h" x="44" y="${ic.length < 3 ? 50 : 49}" text-anchor="middle" font-size="${ic.length < 3 ? 17 : 14}" font-weight="700" fill="${G_L}">${ic}</text>` +
+        `<rect x="22" y="22" width="44" height="44" rx="12" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-opacity=".35"/>` +
+        icon(ic, 33, 33, 22, col) +
         `<text class="mono" x="${(cw - 22).toFixed(1)}" y="40" text-anchor="end" font-size="12" fill="${MUTE}">0${i + 1}</text>` +
         `<text class="h" x="22" y="102" font-size="${fit(title, cw - 44, 19, 600, "jost")}" font-weight="600" fill="${INK}">${title}</text>`,
     );
