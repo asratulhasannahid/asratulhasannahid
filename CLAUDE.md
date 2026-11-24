@@ -23,8 +23,11 @@ casual Banglish, with technical terms in English.
   security, system design
 - ⚠️ He once shared a 12-week learning roadmap, only to show his skills. That learning is DONE.
   **Do not add any roadmap, "learning", "leveling up" or "mission" content.** It was removed on purpose.
-- Social links not given yet. README uses placeholders: `YOUR_LINKEDIN`, `YOUR_FACEBOOK`,
-  `YOUR_EMAIL@gmail.com`, `YOUR_PORTFOLIO.com`, `REPO_NAME_1..4`
+- LinkedIn `in/asratulhasannahid` and Facebook `asratulhasannahid` are filled in (from his GitHub sidebar). Still
+  placeholders: `YOUR_EMAIL@gmail.com`, `YOUR_PORTFOLIO.com`.
+- Featured Work pins: dev-event-main, asratul-hasan-nahid-frontend-react, Pro-Developer-VSCode-Theme,
+  Ambient-Light-Effects. Pin cards only work for PUBLIC repos (Repetup is private). Avoid practice repos like
+  Revision-JavaScript (no "learning" content).
 
 ## How it works (technical)
 

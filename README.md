@@ -82,12 +82,12 @@
 <a name="projects"></a>
 <img src="assets/h-projects.svg" width="100%" alt="Featured Work" />
 
-<!-- ✏️ REPO_NAME_1..4 er jaygay tomar asol repo er nam dao -->
+<!-- ✏️ dev-event-main..4 er jaygay tomar asol repo er nam dao -->
 <p align="center">
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_1"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_1&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_2"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_2&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_3"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_3&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
-  <a href="https://github.com/asratulhasannahid/REPO_NAME_4"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=REPO_NAME_4&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/dev-event-main"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=dev-event-main&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/asratul-hasan-nahid-frontend-react"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=asratul-hasan-nahid-frontend-react&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/Pro-Developer-VSCode-Theme"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=Pro-Developer-VSCode-Theme&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
+  <a href="https://github.com/asratulhasannahid/Ambient-Light-Effects"><img width="49%" src="https://github-readme-stats.vercel.app/api/pin/?username=asratulhasannahid&repo=Ambient-Light-Effects&description_lines_count=2&bg_color=0F1412&title_color=22C55E&icon_color=22C55E&text_color=A6B5AD&border_color=1F2924&border_radius=14" /></a>
 </p>
 
 <br/>
@@ -98,8 +98,8 @@
 
 <!-- ✏️ YOUR_... er jaygay tomar asol link dao -->
 <p align="center">
-  <a href="https://www.linkedin.com/in/YOUR_LINKEDIN"><img src="assets/btn-linkedin.svg" width="23%" alt="LinkedIn" /></a>
-  <a href="https://www.facebook.com/YOUR_FACEBOOK"><img src="assets/btn-facebook.svg" width="23%" alt="Facebook" /></a>
+  <a href="https://www.linkedin.com/in/asratulhasannahid"><img src="assets/btn-linkedin.svg" width="23%" alt="LinkedIn" /></a>
+  <a href="https://www.facebook.com/asratulhasannahid"><img src="assets/btn-facebook.svg" width="23%" alt="Facebook" /></a>
   <a href="mailto:YOUR_EMAIL@gmail.com"><img src="assets/btn-email.svg" width="23%" alt="Email" /></a>
   <a href="https://YOUR_PORTFOLIO.com"><img src="assets/btn-portfolio.svg" width="23%" alt="Portfolio" /></a>
 </p>
