@@ -33,7 +33,14 @@ in `assets/`, shown with `<img>`. SVGs shown through `<img>` support CSS `@keyfr
 and SMIL (`<animate>`, `<animateTransform>`), but they **cannot load external resources** (no Google Fonts URLs,
 no external images). Any custom font must be **embedded as base64 @font-face** inside each SVG.
 
-- `build.py` creates every SVG. Edit CONFIG and the component functions, then run `python build.py`.
+- `build.mjs` creates every SVG (Node 18+, zero dependencies; this Windows machine has Node but no Python, and
+  installing Python tooling was blocked, so the old `build.py` was ported and removed). Edit CONFIG and the
+  component functions, then run `node build.mjs`.
+- Fonts: Jost (headings, class `h`), Inter (body, default), JetBrains Mono (class `mono`). The build asks the
+  Google Fonts CSS API with `&text=` for a woff2 subset of exactly the characters each (family, weight) uses
+  (worked out by parsing the SVG's <text>/<tspan>), and embeds it as base64 @font-face. It also downloads full
+  static TTFs to measure real text widths (`tw()`, `fit()`), so layout uses true widths. Everything is cached
+  in `.cache/fonts` (gitignored).
 - **Never hand-edit files in `assets/`.** They are regenerated.
 - Clickable navigation: each nav button is its own SVG wrapped in `<a href="#section">`, and each section
   has `<a name="section"></a>` before it.
@@ -45,7 +52,7 @@ no external images). Any custom font must be **embedded as base64 @font-face** i
 
 ```
 README.md                     the profile README, uses assets/*.svg
-build.py                      generates every SVG
+build.mjs                     generates every SVG (node build.mjs)
 assets/
   hero.svg                    browser-window hero: name shimmer, typed rotating words, floating code card and badges
   nav-{about,stack,services,stats,projects,contact,top}.svg   navbar buttons (animated border)
@@ -63,49 +70,32 @@ README section order: hero → navbar → ticker → 01 About → 02 Tech Stack 
 → 03 What I Do → 04 GitHub Stats (stats, langs, streak, activity graph, snake) → 05 Featured Work (4 pin cards)
 → 06 Let's Connect (4 buttons) → footer → back-to-top and visitor badge.
 
-## Current state
+## Current state (2026-11-24)
 
-The **dark navy theme version is finished and working** (palette: bg #0B1730, cyan #5CC8FF, amber, purple).
+**Dark + green, "clean" version is done.** The user tried a white/green light version, then asked to keep the
+black version but make it less cluttered ("hijibiji"). Decisions:
 
-## ▶️ NEXT TASK (in progress when the chat ended)
-
-The user asked to switch to a **white / light, "standard" (clean, professional) design**:
-
-1. **Light theme**: white backgrounds, subtle light-gray borders, dark text. Clean and minimal, not flashy.
-2. **Primary color: GREEN.** Suggested palette:
-   - primary `#16A34A`, light `#22C55E`, dark `#15803D`, tint backgrounds `#DCFCE7` / `#F0FDF4`
-   - bg `#FFFFFF`, card `#F7FAF8`, panel `#EEF5F0`, border `#E3E8E5`
-   - text `#0F1A14`, secondary `#43524A`, muted `#6B7A72`
-   - keep brand colors only on brand items (WordPress #21759B, Shopify #7AB55C, LinkedIn, etc.)
-   - code editor (light): keyword `#16A34A`, property `#475569`, string `#B45309`, comment `#94A3B8`
-3. **Fonts: Inter and/or Jost** (the user's choice).
-   - Inter is installed here: `/usr/share/fonts/opentype/inter/Inter-{Regular,Medium,SemiBold,Bold,ExtraBold}.otf`
-   - Jost was **not** available offline. If you can download it (Google Fonts, OFL licence), use Jost for
-     headings and Inter for body. Otherwise use Inter everywhere and tell the user.
-   - Mono font for code: DejaVu Sans Mono (`/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf`),
-     or JetBrains Mono if you can download it.
-   - **Embed the fonts in each SVG**: use fontTools to subset each weight to only the characters in that SVG,
-     save as woff (or woff2 if `brotli` is installed), then add base64 `@font-face` rules in the SVG `<style>`.
-     Keep the file size reasonable.
-4. Things to change in `build.py` for light mode (these were found before the chat ended):
-   - Palette constants (line ~23) and `shimmer_grad` default colors → green shades
-   - Hero: `#102043` bg gradient → white to light green tint; `#3D7BFF` button gradient → greens;
-     blob colors → soft green/teal at low opacity; white twinkle particles → green or remove;
-     browser-bar `fill="{BG}"` and the second button fill; rotating-word color → green
-   - Code colors in the hero and about editors (they use PURPLE/CYAN/AMBER now)
-   - Nav border gradient, header line gradient, and the `#fff` glow dot in headers
-   - Contact buttons: the white shine sweep is invisible on white, so use a tinted shine
-   - Footer: `#1E4A8F` waves → green tints (`#DCFCE7`, `#BBF7D0`, `#22C55E` at low opacity)
-   - `text_w()` width estimates: Inter is wider than the fonts used before, so recheck overflow
-5. README.md: change third-party card colors to light, e.g. `bg_color=FFFFFF`, `title_color=16A34A`,
-   `icon_color=16A34A`, `text_color=43524A`, `border_color=E3E8E5` (show borders), and the same for streak and
-   activity graph. Use `skillicons ... &theme=light` and visitor badge color `16A34A`.
-6. Keep every animation (typing, shimmer, floating, marquee, dash borders, waves), toned to fit a clean light look.
-   Keep the `@media (prefers-reduced-motion)` rule.
+- Palette (dark, one accent): bg #0A0E0C, card #0F1412, panel #151C18, borders #1F2924 / #2B3731,
+  text #EDF3EF / #A6B5AD / muted #71827A, green #22C55E (light #4ADE80, dark #16A34A). Brand colors only on brand
+  items (WP #4AA3DF, Shopify #95BF47, LinkedIn, Facebook, Gmail).
+- Removed on purpose as clutter: hero particles, grid, floating badges, colored traffic lights; running dash
+  borders on nav/stack/services; pulse glows; per-section accent colors; animated progress bars.
+- Kept animations: hero name shimmer, typed rotating words, typed code with a caret that follows the lines,
+  marquee, fade-ins, header underline draw, footer waves, contact shine.
+- Section headers and the footer have transparent backgrounds, so their colors (#16A34A title, #71827A sub)
+  must read on GitHub's light AND dark page.
+- Stats section: GitHub stats card (`card_width=495`) and streak card (`card_width=495&card_height=195`) are
+  both exactly 495x195 at width 49%, so the row has no gaps. The top-langs card was removed: its height depends on
+  the language count, which always left empty space next to it. Pin cards use `description_lines_count=2` so
+  they share one height.
+- Gotcha: a CSS animation on `transform` (e.g. the `up` fade-in) overrides a `transform` attribute on the same
+  element. Put position on an outer <g> and the animation class on an inner <g>.
 
 ## Verifying (always do this before handing over)
 
-Chrome and Playwright are available here. Render each SVG and look at it:
+Chrome is available (no Playwright package). Drive it over the DevTools protocol from a small Node script
+(Node 24 has a global WebSocket): open a preview page, wait real time, then `Page.captureScreenshot`.
+`--virtual-time-budget` does not advance SVG-in-img animations. Render the page on GitHub dark (#0D1117).
 
 - `<img>` with a `file://` src must be inside a page also loaded from `file://` (`page.goto`), not `set_content`
 - Chrome pauses animations in offscreen images, so for a full-page screenshot use a tall viewport (~4200px)
@@ -115,6 +105,6 @@ Chrome and Playwright are available here. Render each SVG and look at it:
 
 ## Deliverable
 
-A zip containing `README.md`, `build.py`, `assets/`, and `.github/workflows/snake.yml`, plus a preview PNG.
-Tell the user (in Banglish) how to upload it: public repo `asratulhasannahid`, upload everything,
-replace the placeholders, then Actions → Generate Snake → Run workflow.
+The user commits and pushes this folder straight to `github.com/asratulhasannahid/asratulhasannahid`, so no zip is
+needed. Hand over the changed files, `preview.png`, and remind them to replace the placeholders and run
+Actions → Generate Snake → Run workflow once.

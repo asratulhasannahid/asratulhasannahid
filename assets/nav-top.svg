@@ -10,4 +10,4 @@ text{font-family:'xInter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-ser
 @keyframes dash{to{stroke-dashoffset:-400}}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
-</style><defs></defs><rect x="1" y="1" width="148" height="38" rx="20" fill="#FFFFFF" stroke="#E3E8E5"/><path d="M35.659423828125 26V14M29.659423828125 19.5l6-6 6 6" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="49.7" y="25" font-size="13" font-weight="600" fill="#43524A">Back to top</text></svg>
+</style><defs></defs><rect x=".5" y=".5" width="149" height="39" rx="20" fill="#0F1412" stroke="#2B3731"/><path d="M35.659423828125 26V14M29.659423828125 19.5l6-6 6 6" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="49.7" y="25" font-size="13" font-weight="600" fill="#A6B5AD">Back to top</text></svg>

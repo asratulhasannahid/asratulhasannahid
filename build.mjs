@@ -27,15 +27,16 @@ const CACHE = join(ROOT, ".cache", "fonts");
 mkdirSync(OUT, { recursive: true });
 mkdirSync(CACHE, { recursive: true });
 
-// ---------------------------------------------------------------- PALETTE (light, green primary)
-const BG = "#FFFFFF", CARD = "#F7FAF8", PANEL = "#EEF5F0", LINE = "#E3E8E5";
-const INK = "#0F1A14", INK2 = "#43524A", MUTE = "#6B7A72";
-const G = "#16A34A", G_L = "#22C55E", G_D = "#15803D", TINT = "#DCFCE7", TINT2 = "#F0FDF4", MINT = "#BBF7D0";
-const TEAL = "#0D9488", EMERALD = "#047857", CYAN = "#0E7490";
-// code editor (light)
-const C_KEY = G, C_PROP = "#475569", C_STR = "#B45309", C_COM = "#94A3B8", C_ID = "#0F766E", C_TYPE = CYAN, C_PUN = INK2;
-// brand colors, only on brand items
-const WP = "#21759B", SHOP = "#7AB55C", NEST = "#E0234E", LINKEDIN = "#0A66C2", FACEBOOK = "#1877F2", GMAIL = "#D14836";
+// ---------------------------------------------------------------- PALETTE (dark, one green accent)
+const BG = "#0A0E0C", CARD = "#0F1412", PANEL = "#151C18", LINE = "#1F2924", LINE2 = "#2B3731";
+const INK = "#EDF3EF", INK2 = "#A6B5AD", MUTE = "#71827A";
+const G = "#22C55E", G_L = "#4ADE80", G_D = "#16A34A", MINT = "#A7F3D0";
+// code editor (dark)
+const C_KEY = G_L, C_PROP = "#9AA8B6", C_STR = "#F5C98B", C_COM = "#56665E", C_ID = INK, C_TYPE = "#5EEAD4", C_PUN = "#7E8E86";
+// brand colors, only on brand items (lightened where needed to read on dark)
+const WP = "#4AA3DF", SHOP = "#95BF47", LINKEDIN = "#0A66C2", FACEBOOK = "#1877F2", GMAIL = "#D14836";
+// section headers have no background, so their colors must read on GitHub's light AND dark page
+const HEAD = G_D, HEAD_SUB = MUTE;
 
 // ---------------------------------------------------------------- FONTS
 const FAMILIES = {
@@ -210,7 +211,7 @@ const svg = (w, h, body, css = "", defs = "") =>
 const PAGES = [];
 const save = (name, content) => PAGES.push([name, content]);
 
-function shimmerGrad(id, width = 600, colors = [G_D, G_L, TEAL, G_D], dur = 6) {
+function shimmerGrad(id, width = 600, colors = [G, G_L, MINT, G_L, G], dur = 7) {
   const stops = colors.map((c, i) => `<stop offset="${(i / (colors.length - 1)).toFixed(2)}" stop-color="${c}"/>`).join("");
   return (
     `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${width}" y2="0" spreadMethod="repeat">${stops}` +
@@ -218,21 +219,17 @@ function shimmerGrad(id, width = 600, colors = [G_D, G_L, TEAL, G_D], dur = 6) {
   );
 }
 
-const shadow = (id, dy = 8, blur = 12, op = 0.07) =>
-  `<filter id="${id}" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="${dy}" stdDeviation="${blur}" flood-color="#0B3B1E" flood-opacity="${op}"/></filter>`;
-
-/** Four-point sparkle. */
-const sparkle = (cx, cy, s, fill, extra = "") =>
-  `<path d="M${cx} ${cy - s}Q${cx} ${cy} ${cx + s} ${cy}Q${cx} ${cy} ${cx} ${cy + s}Q${cx} ${cy} ${cx - s} ${cy}Q${cx} ${cy} ${cx} ${cy - s}Z" fill="${fill}" ${extra}/>`;
-
-/** Typing animation for code lines: each line is revealed by a growing clip rect. */
+/** Typing animation for code lines: each line is revealed by a growing clip rect,
+ *  and a blinking caret jumps to the end of each line as it finishes. */
 function typedLines(lines, { x, y0, step, size, dur, idPrefix, numX, start = 0.3, per = 0.75, hold = 0.94 }) {
   const out = [];
+  const cx = [x], cy = [y0 - size + 1], kt = [0];
   lines.forEach((ln, i) => {
     const y = y0 + i * step;
     const plain = ln.map(([t]) => t).join("");
     const ww = tw(plain, size, 400, "mono") + 10;
     const t0 = (start + i * per) / dur, t1 = (start + i * per + 0.6) / dur;
+    cx.push(x + ww - 7); cy.push(y - size + 1); kt.push(t1);
     out.push(`<text class="mono" x="${numX}" y="${y}" font-size="${size - 1.5}" fill="${MUTE}" opacity=".55">${String(i + 1).padStart(2, " ")}</text>`);
     out.push(
       `<clipPath id="${idPrefix}${i}"><rect x="${x}" y="${y - size - 3}" height="${size + 9}" width="0">` +
@@ -241,105 +238,86 @@ function typedLines(lines, { x, y0, step, size, dur, idPrefix, numX, start = 0.3
     const spans = ln.map(([t, c]) => `<tspan fill="${c}">${t}</tspan>`).join("");
     out.push(`<text class="mono" clip-path="url(#${idPrefix}${i})" x="${x}" y="${y}" font-size="${size}" xml:space="preserve">${spans}</text>`);
   });
+  cx.push(x); cy.push(y0 - size + 1); kt.push(hold);
+  const keys = kt.map((k) => k.toFixed(3)).join(";");
+  out.push(
+    `<rect class="blink" width="${Math.round(size * 0.55)}" height="${size + 4}" rx="1" fill="${G}" opacity=".85">` +
+      `<animate attributeName="x" values="${cx.map(f0).join(";")}" keyTimes="${keys}" dur="${dur}s" repeatCount="indefinite" calcMode="discrete"/>` +
+      `<animate attributeName="y" values="${cy.map(f0).join(";")}" keyTimes="${keys}" dur="${dur}s" repeatCount="indefinite" calcMode="discrete"/></rect>`,
+  );
   return out.join("");
 }
 
 // --------------------------------------------------------------- HERO
 function hero() {
-  const W = 1000, H = 472;
-  const X = 12, Y = 8, WW = W - 24, WH = 440;
+  const W = 1000, H = 440;
   const defs = `
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${BG}"/><stop offset="1" stop-color="${TINT2}"/></linearGradient>
     ${shimmerGrad("name", 560)}
-    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${G_L}"/><stop offset="1" stop-color="${G_D}"/></linearGradient>
-    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="50"/></filter>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
-    ${shadow("win", 10, 12, 0.08)}${shadow("card", 10, 14, 0.1)}${shadow("chip", 4, 5, 0.08)}
-    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" stroke="${G}" stroke-opacity=".08"/></pattern>
-    <radialGradient id="fade" cx=".72" cy=".35" r=".75"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    <mask id="gm"><rect width="${W}" height="${H}" fill="url(#fade)"/></mask>
-    <clipPath id="clip"><rect x="${X}" y="${Y}" width="${WW}" height="${WH}" rx="20"/></clipPath>`;
+    <radialGradient id="glow" cx=".8" cy=".2" r=".6"><stop offset="0" stop-color="${G}" stop-opacity=".11"/><stop offset="1" stop-color="${G}" stop-opacity="0"/>
+      <animate attributeName="cx" values=".8;.68;.8" dur="14s" repeatCount="indefinite"/></radialGradient>
+    <radialGradient id="glow2" cx=".05" cy="1" r=".5"><stop offset="0" stop-color="${G}" stop-opacity=".07"/><stop offset="1" stop-color="${G}" stop-opacity="0"/></radialGradient>
+    <clipPath id="clip"><rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="18"/></clipPath>`;
   const css = `
-    .float1{animation:float 6s ease-in-out infinite}
-    .float2{animation:float 5s ease-in-out infinite;animation-delay:-2s}
-    .float3{animation:float 7s ease-in-out infinite;animation-delay:-4s}
-    .blink{animation:blink 1s step-end infinite}
-    .tw{animation:twinkle 3s ease-in-out infinite}
+    .float{animation:float 7s ease-in-out infinite}
     .in1{animation:up .8s ease both .1s}.in2{animation:up .8s ease both .3s}.in3{animation:up .8s ease both .5s}
-    .in4{animation:up .8s ease both .7s}.in5{animation:up .8s ease both .9s}
-    .ring{animation:ring 2s ease-out infinite}
-    .btnglow{animation:pulse 2.6s ease-in-out infinite}`;
+    .in4{animation:up .8s ease both .7s}.in5{animation:up .8s ease both .9s}.in6{animation:up .9s ease both .6s}
+    .ring{animation:ring 2.2s ease-out infinite}`;
   const b = [];
-  b.push(`<rect x="${X}" y="${Y}" width="${WW}" height="${WH}" rx="20" fill="${BG}" filter="url(#win)"/>`);
-  b.push(`<g clip-path="url(#clip)"><rect width="${W}" height="${H}" fill="url(#bg)"/>`);
-  // soft blobs
-  b.push(`<g filter="url(#blur)">
-      <circle cx="800" cy="190" r="150" fill="${G_L}" opacity=".16"><animateTransform attributeName="transform" type="translate" values="0 0;-60 40;0 0" dur="14s" repeatCount="indefinite"/></circle>
-      <circle cx="640" cy="430" r="130" fill="${TEAL}" opacity=".12"><animateTransform attributeName="transform" type="translate" values="0 0;70 -30;0 0" dur="11s" repeatCount="indefinite"/></circle>
-      <circle cx="120" cy="450" r="110" fill="${MINT}" opacity=".35"><animateTransform attributeName="transform" type="translate" values="0 0;40 -40;0 0" dur="16s" repeatCount="indefinite"/></circle>
-    </g>`);
-  b.push(`<rect width="${W}" height="${H}" fill="url(#grid)" mask="url(#gm)"/>`);
-  // tiny green particles
-  let seed = 7;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 16; i++) {
-    const x = 40 + rnd() * 920, y = 80 + rnd() * 350, r = [1.2, 1.5, 2][Math.floor(rnd() * 3)];
-    b.push(`<circle class="tw" cx="${f0(x)}" cy="${f0(y)}" r="${r}" fill="${G}" style="animation-delay:-${(rnd() * 3).toFixed(1)}s;animation-duration:${(2 + rnd() * 3).toFixed(1)}s"/>`);
-  }
-  // browser chrome
-  b.push(`<rect x="${X}" y="${Y}" width="${WW}" height="46" fill="${BG}" fill-opacity=".85"/><line x1="${X}" y1="${Y + 46}" x2="${X + WW}" y2="${Y + 46}" stroke="${LINE}"/>`);
-  ["#FF5F57", "#FEBC2E", "#28C840"].forEach((c, i) => b.push(`<circle cx="${X + 26 + i * 20}" cy="${Y + 23}" r="6" fill="${c}"/>`));
-  b.push(`<rect x="300" y="${Y + 10}" width="400" height="26" rx="13" fill="${CARD}" stroke="${LINE}"/>`);
-  b.push(`<path d="M324 ${Y + 20}v-2a4 4 0 0 1 8 0v2" stroke="${G}" stroke-width="1.6"/><rect x="322" y="${Y + 20}" width="12" height="9" rx="2" fill="${G}"/>`);
-  b.push(`<text x="500" y="${Y + 28}" text-anchor="middle" font-size="13" font-weight="500" fill="${INK2}">${esc(DOMAIN)}</text>`);
-  let nx = X + WW - 24;
+  b.push(`<g clip-path="url(#clip)"><rect width="${W}" height="${H}" fill="${BG}"/><rect width="${W}" height="${H}" fill="url(#glow)"/><rect width="${W}" height="${H}" fill="url(#glow2)"/>`);
+  // browser bar
+  b.push(`<rect width="${W}" height="44" fill="${CARD}"/><line x1="0" y1="44.5" x2="${W}" y2="44.5" stroke="${LINE}"/>`);
+  [0, 1, 2].forEach((i) => b.push(`<circle cx="${26 + i * 18}" cy="22" r="5.5" fill="${LINE2}"/>`));
+  b.push(`<rect x="320" y="10" width="360" height="24" rx="12" fill="${BG}" stroke="${LINE}"/>`);
+  b.push(`<path d="M343 20v-2a4 4 0 0 1 8 0v2" stroke="${G}" stroke-width="1.5"/><rect x="341" y="20" width="12" height="8.5" rx="2" fill="${G}"/>`);
+  b.push(`<text x="500" y="27" text-anchor="middle" font-size="12.5" font-weight="500" fill="${MUTE}">${esc(DOMAIN)}</text>`);
+  let nx = W - 28;
   for (const t of ["Contact", "Services", "Stack", "About"]) {
-    b.push(`<text x="${f0(nx)}" y="${Y + 28}" text-anchor="end" font-size="12.5" font-weight="500" fill="${MUTE}">${t}</text>`);
+    b.push(`<text x="${f0(nx)}" y="27" text-anchor="end" font-size="12.5" font-weight="500" fill="${MUTE}">${t}</text>`);
     nx -= tw(t, 12.5, 500) + 22;
   }
   b.push("</g>");
-  b.push(`<rect x="${X}" y="${Y}" width="${WW}" height="${WH}" rx="20" stroke="${LINE}" stroke-width="1.2"/>`);
+  b.push(`<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="18" stroke="${LINE}"/>`);
 
-  // left content
-  const pillW = tw(ROLE, 13.5, 600) + 52;
-  b.push(`<g class="in1"><rect x="50" y="88" width="${f0(pillW)}" height="32" rx="16" fill="${TINT2}" stroke="${G}" stroke-opacity=".35"/>
-      <circle cx="68" cy="104" r="4.5" fill="${G}"/><circle class="ring" cx="68" cy="104" r="5" stroke="${G}" stroke-width="1.6"/>
-      <text x="82" y="109" font-size="13.5" font-weight="600" fill="${G_D}">${esc(ROLE)}</text></g>`);
-  b.push(`<text class="in2" x="50" y="164" font-size="21" font-weight="500" fill="${INK2}">Hi there, I&#8217;m</text>`);
-  const nameSize = fit(NAME, 530, 56, 700, "jost");
-  b.push(`<text class="h in2" x="48" y="224" font-size="${nameSize}" font-weight="700" fill="url(#name)" letter-spacing="-.5">${esc(NAME)}</text>`);
+  // left column
+  const L = 56;
+  const pillW = tw(ROLE, 13, 600) + 48;
+  b.push(`<g class="in1"><rect x="${L}" y="96" width="${f0(pillW)}" height="30" rx="15" fill="${G}" fill-opacity=".08" stroke="${G}" stroke-opacity=".3"/>
+      <circle cx="${L + 17}" cy="111" r="4" fill="${G}"/><circle class="ring" cx="${L + 17}" cy="111" r="5" stroke="${G}" stroke-width="1.5"/>
+      <text x="${L + 30}" y="115.5" font-size="13" font-weight="600" fill="${G_L}">${esc(ROLE)}</text></g>`);
+  b.push(`<text class="in2" x="${L}" y="168" font-size="20" font-weight="500" fill="${INK2}">Hi there, I&#8217;m</text>`);
+  const nameSize = fit(NAME, 500, 54, 700, "jost");
+  b.push(`<text class="h in2" x="${L - 2}" y="224" font-size="${nameSize}" font-weight="700" fill="url(#name)" letter-spacing="-.5">${esc(NAME)}</text>`);
 
   // rotating typed words
   const words = ["WordPress experiences", "Shopify themes", "headless CMS sites", "full-stack apps", "scalable APIs"];
   const cyc = words.length * 3;
-  b.push(`<g class="in3"><text x="50" y="272" font-size="24" font-weight="600" fill="${INK}">I build</text>`);
-  const x0 = 50 + tw("I build", 24, 600) + 9;
+  b.push(`<g class="in3"><text x="${L}" y="270" font-size="22" font-weight="600" fill="${INK}">I build</text>`);
+  const x0 = L + tw("I build", 22, 600) + 8;
   words.forEach((wd, i) => {
-    const ww = tw(wd, 24, 700) + 4;
+    const ww = tw(wd, 22, 700) + 4;
     const a = (i * 3) / cyc, s1 = (i * 3 + 1.1) / cyc, s2 = (i * 3 + 2.4) / cyc, e = (i * 3 + 2.9) / cyc;
     const kt = [...new Set([0, a, s1, s2, e, 1])].sort((p, q) => p - q);
     const v = kt.map((k) => (k === s1 || k === s2 ? ww : 0));
     const kts = kt.map((k) => k.toFixed(4)).join(";");
-    b.push(`<clipPath id="cw${i}"><rect x="${f0(x0)}" y="244" height="38" width="0"><animate attributeName="width" values="${v.map((n) => n.toFixed(1)).join(";")}" keyTimes="${kts}" dur="${cyc}s" repeatCount="indefinite" calcMode="linear"/></rect></clipPath>`);
-    b.push(`<text clip-path="url(#cw${i})" x="${f0(x0)}" y="272" font-size="24" font-weight="700" fill="${G}">${esc(wd)}</text>`);
+    b.push(`<clipPath id="cw${i}"><rect x="${f0(x0)}" y="244" height="36" width="0"><animate attributeName="width" values="${v.map((n) => n.toFixed(1)).join(";")}" keyTimes="${kts}" dur="${cyc}s" repeatCount="indefinite" calcMode="linear"/></rect></clipPath>`);
+    b.push(`<text clip-path="url(#cw${i})" x="${f0(x0)}" y="270" font-size="22" font-weight="700" fill="${G_L}">${esc(wd)}</text>`);
     b.push(
-      `<rect y="251" width="2.5" height="28" rx="1" fill="${G}" opacity="0"><animate attributeName="x" values="${v.map((n) => (x0 + n + 1).toFixed(1)).join(";")}" keyTimes="${kts}" dur="${cyc}s" repeatCount="indefinite"/>` +
-        `<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;${(a + 0.0001).toFixed(4)};${e.toFixed(4)};1" dur="${cyc}s" repeatCount="indefinite" calcMode="discrete"/></rect>`,
+      `<rect y="250" width="2.5" height="26" rx="1" fill="${G_L}" opacity="0"><animate attributeName="x" values="${v.map((n) => (x0 + n + 1).toFixed(1)).join(";")}" keyTimes="${kts}" dur="${cyc}s" repeatCount="indefinite"/>` +
+        // discrete: each value holds until the next keyTime, so the caret shows only from a to e
+        `<animate attributeName="opacity" values="0;1;0" keyTimes="0;${(a + 0.0001).toFixed(4)};${e.toFixed(4)}" dur="${cyc}s" repeatCount="indefinite" calcMode="discrete"/></rect>`,
     );
   });
   b.push("</g>");
-  b.push(`<g class="in4"><text x="50" y="316" font-size="15.5" fill="${INK2}">2+ years shipping fast, secure web apps, stores &amp; CMS sites.</text>
-      <text x="50" y="340" font-size="15.5" fill="${INK2}">Next.js · NestJS · PostgreSQL · Docker · AWS · WordPress · Shopify</text></g>`);
+  b.push(`<text class="in4" x="${L}" y="310" font-size="15" fill="${MUTE}">2+ years shipping fast, secure web apps, stores &amp; CMS sites.</text>`);
   const b1 = "See what I do &#8594;", b2 = "Let&#8217;s connect";
-  const b1w = tw(b1, 15, 600) + 48, b2w = tw(b2, 15, 600) + 44;
+  const b1w = tw(b1, 14.5, 600) + 44, b2w = tw(b2, 14.5, 600) + 40;
   b.push(`<g class="in5">
-      <rect class="btnglow" x="54" y="378" width="${f0(b1w - 8)}" height="40" rx="20" fill="${G}" opacity=".45" filter="url(#glow)"/>
-      <rect x="50" y="368" width="${f0(b1w)}" height="46" rx="23" fill="url(#btn)"/>
-      <text x="${f0(50 + b1w / 2)}" y="396" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">${b1}</text>
-      <rect x="${f0(50 + b1w + 14)}" y="368" width="${f0(b2w)}" height="46" rx="23" fill="${BG}" stroke="${LINE}" stroke-width="1.2"/>
-      <text x="${f0(50 + b1w + 14 + b2w / 2)}" y="396" text-anchor="middle" font-size="15" font-weight="600" fill="${INK}">${b2}</text></g>`);
+      <rect x="${L}" y="340" width="${f0(b1w)}" height="44" rx="22" fill="${G}"/>
+      <text x="${f0(L + b1w / 2)}" y="367" text-anchor="middle" font-size="14.5" font-weight="600" fill="#06140B">${b1}</text>
+      <rect x="${f0(L + b1w + 12)}" y="340" width="${f0(b2w)}" height="44" rx="22" fill="${CARD}" stroke="${LINE2}"/>
+      <text x="${f0(L + b1w + 12 + b2w / 2)}" y="367" text-anchor="middle" font-size="14.5" font-weight="600" fill="${INK}">${b2}</text></g>`);
 
-  // code card
+  // code card (right column)
   const P = C_PUN;
   const lines = [
     [["const ", C_KEY], ["nahid", C_ID], [" = {", P]],
@@ -347,27 +325,17 @@ function hero() {
     [["  company", C_PROP], [": ", P], ['"Exprovia"', C_STR], [",", P]],
     [["  stack", C_PROP], [": [", P], ['"WP"', C_STR], [", ", P], ['"Shopify"', C_STR], ["],", P]],
     [["  backend", C_PROP], [": [", P], ['"NestJS"', C_STR], [", ", P], ['"AWS"', C_STR], ["],", P]],
-    [["  cha", C_PROP], [": ", P], ["Infinity", TEAL], [",", P]],
+    [["  cha", C_PROP], [": ", P], ["Infinity", C_TYPE], [",", P]],
     [["};", P]],
   ];
-  const cx = 612, cy = 100, cw = 340, ch = 250;
-  b.push(`<g class="float1"><rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" rx="16" fill="${BG}" stroke="${LINE}" filter="url(#card)"/>`);
-  b.push(`<path d="M${cx} ${cy + 40}V${cy + 16}a16 16 0 0 1 16-16h${cw - 32}a16 16 0 0 1 16 16V${cy + 40}z" fill="${CARD}"/><line x1="${cx}" y1="${cy + 40}" x2="${cx + cw}" y2="${cy + 40}" stroke="${LINE}"/>`);
-  b.push(`<rect x="${cx + 12}" y="${cy + 8}" width="100" height="32" rx="7" fill="${BG}" stroke="${LINE}"/><rect x="${cx + 13}" y="${cy + 34}" width="98" height="8" fill="${BG}"/><circle cx="${cx + 27}" cy="${cy + 24}" r="4" fill="${G}"/>`);
-  b.push(`<text class="mono" x="${cx + 38}" y="${cy + 29}" font-size="12.5" fill="${INK}">nahid.ts</text>`);
-  b.push(`<text class="mono" x="${cx + cw - 16}" y="${cy + 28}" text-anchor="end" font-size="11" fill="${MUTE}">TypeScript</text>`);
-  b.push(typedLines(lines, { x: cx + 42, y0: cy + 68, step: 25, size: 13.5, dur: 11, idPrefix: "cl", numX: cx + 12 }));
-  b.push(`<rect class="blink" x="${cx + 62}" y="${cy + 68 + 6 * 25 - 14}" width="8" height="17" rx="1" fill="${G}"/>`);
-  b.push("</g>");
-  // floating brand badges
-  const badges = [[556, 86, "WordPress", WP, "float2"], [872, 356, "Shopify", SHOP, "float3"], [588, 378, "Next.js", INK, "float3"], [880, 72, "NestJS", NEST, "float2"]];
-  for (const [x, y, t, c, cl] of badges) {
-    const w = tw(t, 13, 600) + 40;
-    b.push(
-      `<g class="${cl}"><rect x="${x}" y="${y}" width="${f0(w)}" height="32" rx="16" fill="${BG}" stroke="${c}" stroke-opacity=".4" filter="url(#chip)"/>` +
-        `<circle cx="${x + 16}" cy="${y + 16}" r="4.5" fill="${c}"/><text x="${x + 27}" y="${y + 21}" font-size="13" font-weight="600" fill="${INK}">${t}</text></g>`,
-    );
-  }
+  const cw = 356, ch = 262, cx = W - 56 - cw, cy = 112;
+  b.push(`<g class="in6"><g class="float"><rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" rx="14" fill="${CARD}" stroke="${LINE}"/>`);
+  b.push(`<path d="M${cx} ${cy + 40}V${cy + 14}a14 14 0 0 1 14-14h${cw - 28}a14 14 0 0 1 14 14V${cy + 40}z" fill="${PANEL}"/><line x1="${cx}" y1="${cy + 40.5}" x2="${cx + cw}" y2="${cy + 40.5}" stroke="${LINE}"/>`);
+  [0, 1, 2].forEach((i) => b.push(`<circle cx="${cx + 20 + i * 15}" cy="${cy + 20}" r="4.5" fill="${LINE2}"/>`));
+  b.push(`<circle cx="${cx + 82}" cy="${cy + 20}" r="3.5" fill="${G}"/><text class="mono" x="${cx + 92}" y="${cy + 24.5}" font-size="12" fill="${INK2}">nahid.ts</text>`);
+  b.push(`<text class="mono" x="${cx + cw - 16}" y="${cy + 24.5}" text-anchor="end" font-size="11" fill="${MUTE}">TypeScript</text>`);
+  b.push(typedLines(lines, { x: cx + 44, y0: cy + 74, step: 26, size: 13.5, dur: 11, idPrefix: "cl", numX: cx + 14 }));
+  b.push("</g></g>");
   save("hero.svg", svg(W, H, b.join(""), css, defs));
 }
 
@@ -375,24 +343,21 @@ function hero() {
 function nav() {
   const items = [["about", "About", "01"], ["stack", "Tech Stack", "02"], ["services", "What I Do", "03"],
     ["stats", "Stats", "04"], ["projects", "Projects", "05"], ["contact", "Contact", "06"]];
-  items.forEach(([slug, label, n], i) => {
-    const W = 150, H = 48;
-    const defs = `<linearGradient id="bd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${G_L}"/><stop offset=".5" stop-color="${G_D}"/><stop offset="1" stop-color="${TEAL}"/></linearGradient>`;
-    const css = `.run{stroke-dasharray:60 340;animation:dash 4s linear infinite;animation-delay:-${(i * 0.6).toFixed(1)}s}`;
-    const nw = tw(n, 11.5, 400, "mono"), lw = tw(label, 14.5, 600), gap = 8;
+  for (const [slug, label, n] of items) {
+    const W = 150, H = 46;
+    const nw = tw(n, 11.5, 400, "mono"), lw = tw(label, 14, 600), gap = 8;
     const sx = (W - (nw + gap + lw)) / 2;
     const body =
-      `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="24" fill="${BG}" stroke="${LINE}"/>` +
-      `<rect class="run" x="1" y="1" width="${W - 2}" height="${H - 2}" rx="24" stroke="url(#bd)" stroke-width="2"/>` +
-      `<text class="mono" x="${sx.toFixed(1)}" y="29" font-size="11.5" fill="${G}">${n}</text>` +
-      `<text x="${(sx + nw + gap).toFixed(1)}" y="30" font-size="14.5" font-weight="600" fill="${INK}">${esc(label)}</text>`;
-    save(`nav-${slug}.svg`, svg(W, H, body, css, defs));
-  });
+      `<rect x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="23" fill="${CARD}" stroke="${LINE2}"/>` +
+      `<text class="mono" x="${sx.toFixed(1)}" y="28" font-size="11.5" fill="${G}">${n}</text>` +
+      `<text x="${(sx + nw + gap).toFixed(1)}" y="28.5" font-size="14" font-weight="600" fill="${INK}">${esc(label)}</text>`;
+    save(`nav-${slug}.svg`, svg(W, H, body));
+  }
   // back to top
   const W = 150, H = 40, lw = tw("Back to top", 13, 600);
   const sx = (W - (12 + 8 + lw)) / 2;
   const body =
-    `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="20" fill="${BG}" stroke="${LINE}"/>` +
+    `<rect x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="20" fill="${CARD}" stroke="${LINE2}"/>` +
     `<path d="M${sx + 6} 26V14M${sx} 19.5l6-6 6 6" stroke="${G}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` +
     `<text x="${(sx + 20).toFixed(1)}" y="25" font-size="13" font-weight="600" fill="${INK2}">Back to top</text>`;
   save("nav-top.svg", svg(W, H, body));
@@ -400,27 +365,26 @@ function nav() {
 
 // --------------------------------------------------------------- TICKER
 function ticker() {
-  const W = 1000, H = 58;
+  const W = 1000, H = 54;
   const items = ["WordPress", "Shopify", "Liquid", "PHP", "Headless CMS", "Next.js", "React", "TypeScript",
     "NestJS", "PostgreSQL", "Prisma", "Redis", "BullMQ", "Docker", "AWS", "Linux", "Nginx", "GitHub Actions"];
-  const colors = [G, TEAL, G_L, G_D];
   const xs = [];
   let x = 0;
-  for (const t of items) { xs.push(x); x += tw(t, 17, 600, "jost") + 52; }
+  for (const t of items) { xs.push(x); x += tw(t, 16, 500, "jost") + 44; }
   const GAP = Math.round(x);
   const row = (off) =>
     items.map((t, i) => {
-      const px = xs[i] + off, tx = px + tw(t, 17, 600, "jost");
-      return `<text class="h" x="${f0(px)}" y="35" font-size="17" font-weight="600" fill="${INK}">${esc(t)}</text>` + sparkle(+(tx + 26).toFixed(1), 29, 6, colors[i % 4]);
+      const px = xs[i] + off, tx = px + tw(t, 16, 500, "jost");
+      return `<text class="h" x="${f0(px)}" y="32.5" font-size="16" font-weight="500" fill="${INK2}">${esc(t)}</text><circle cx="${(tx + 22).toFixed(1)}" cy="27" r="2.5" fill="${G}"/>`;
     }).join("");
   const defs =
-    `<linearGradient id="edge" x1="0" x2="1"><stop offset="0" stop-color="${BG}"/><stop offset=".08" stop-color="${BG}" stop-opacity="0"/>` +
-    `<stop offset=".92" stop-color="${BG}" stop-opacity="0"/><stop offset="1" stop-color="${BG}"/></linearGradient>` +
+    `<linearGradient id="edge" x1="0" x2="1"><stop offset="0" stop-color="${CARD}"/><stop offset=".08" stop-color="${CARD}" stop-opacity="0"/>` +
+    `<stop offset=".92" stop-color="${CARD}" stop-opacity="0"/><stop offset="1" stop-color="${CARD}"/></linearGradient>` +
     `<clipPath id="c"><rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="14"/></clipPath>`;
   const body =
-    `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="14" fill="${BG}" stroke="${LINE}"/>` +
+    `<rect x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="14" fill="${CARD}" stroke="${LINE}"/>` +
     `<g clip-path="url(#c)"><g>${row(24)}${row(24 + GAP)}${row(24 + 2 * GAP)}` +
-    `<animateTransform attributeName="transform" type="translate" from="0 0" to="-${GAP} 0" dur="${(GAP / 45).toFixed(1)}s" repeatCount="indefinite"/></g>` +
+    `<animateTransform attributeName="transform" type="translate" from="0 0" to="-${GAP} 0" dur="${(GAP / 40).toFixed(1)}s" repeatCount="indefinite"/></g>` +
     `<rect width="${W}" height="${H}" fill="url(#edge)"/></g>`;
   save("ticker.svg", svg(W, H, body, "", defs));
 }
@@ -434,48 +398,34 @@ function headers() {
     ["projects", "05", "Featured Work", "Things I've built and shipped"],
     ["contact", "06", "Let's Connect", "Open to collaborate and build together"]];
   for (const [slug, n, title, sub] of secs) {
-    const W = 1000, H = 110;
-    const defs =
-      shimmerGrad("tg", 420, [INK, G, INK], 5) +
-      `<linearGradient id="ln" x1="0" x2="1"><stop offset="0" stop-color="${G}"/><stop offset=".55" stop-color="${G_L}"/><stop offset="1" stop-color="${G_L}" stop-opacity="0"/></linearGradient>` +
-      `<filter id="gl" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3"/></filter>`;
-    const css = `.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawl 2.2s ease forwards .2s}
+    const W = 1000, H = 96;
+    const css = `.draw{stroke-dasharray:180;stroke-dashoffset:180;animation:drawl 1.6s ease forwards .3s}
       @keyframes drawl{to{stroke-dashoffset:0}}
-      .t{animation:up .8s ease both}.s{animation:up .8s ease both .25s}
-      .bx{animation:up .6s ease both}.pl{animation:pulse 3s ease-in-out infinite}`;
+      .t{animation:up .8s ease both}.s{animation:up .8s ease both .2s}`;
     const body =
-      `<g class="bx"><rect x="1" y="16" width="62" height="62" rx="16" fill="${TINT2}" stroke="${TINT}" stroke-width="1.5"/>` +
-      `<rect class="pl" x="1" y="16" width="62" height="62" rx="16" stroke="${G}" stroke-opacity=".35" stroke-width="1.5"/>` +
-      `<text class="h" x="32" y="56" text-anchor="middle" font-size="24" font-weight="700" fill="${G}">${n}</text></g>` +
-      `<text class="h t" x="84" y="50" font-size="32" font-weight="700" fill="url(#tg)">${esc(title)}</text>` +
-      `<text class="s" x="85" y="77" font-size="15" fill="${MUTE}">${esc(sub)}</text>` +
-      `<line x1="0" y1="100" x2="${W}" y2="100" stroke="${LINE}"/>` +
-      `<line class="draw" x1="0" y1="100" x2="${W}" y2="100" stroke="url(#ln)" stroke-width="2.5"/>` +
-      `<circle cy="100" r="7" fill="${G_L}" opacity=".45" filter="url(#gl)"><animate attributeName="cx" values="0;${W * 0.7};0" dur="7s" repeatCount="indefinite"/></circle>` +
-      `<circle cy="100" r="3.5" fill="${G}"><animate attributeName="cx" values="0;${W * 0.7};0" dur="7s" repeatCount="indefinite"/></circle>`;
-    save(`h-${slug}.svg`, svg(W, H, body, css, defs));
+      `<g class="t"><rect x="1" y="14" width="52" height="52" rx="14" fill="${G}" fill-opacity=".08" stroke="${G}" stroke-opacity=".35"/>` +
+      `<text class="h" x="27" y="48" text-anchor="middle" font-size="21" font-weight="600" fill="${HEAD}">${n}</text>` +
+      `<text class="h" x="72" y="40" font-size="28" font-weight="700" fill="${HEAD}">${esc(title)}</text></g>` +
+      `<text class="s" x="73" y="63" font-size="14.5" fill="${HEAD_SUB}">${esc(sub)}</text>` +
+      `<line x1="0" y1="88" x2="${W}" y2="88" stroke="${MUTE}" stroke-opacity=".25"/>` +
+      `<line class="draw" x1="0" y1="88" x2="180" y2="88" stroke="${G}" stroke-width="2.5" stroke-linecap="round"/>`;
+    save(`h-${slug}.svg`, svg(W, H, body, css));
   }
 }
 
 // --------------------------------------------------------------- ABOUT
 function about() {
-  const W = 1000, H = 380;
-  const css = `.blink{animation:blink 1s step-end infinite}
-    .c1{animation:up .7s ease both .2s}.c2{animation:up .7s ease both .4s}.c3{animation:up .7s ease both .6s}.c4{animation:up .7s ease both .8s}
-    .bar{animation:grow 2.5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left}
-    @keyframes grow{from{transform:scaleX(.25)}to{transform:scaleX(1)}}
-    .glow{animation:pulse 3s ease-in-out infinite}`;
-  const ex = 1, ey = 1, ew = 540, eh = 376;
-  const defs = `<clipPath id="ed"><rect x="${ex}" y="${ey}" width="${ew}" height="${eh}" rx="16"/></clipPath>`;
+  const W = 1000, H = 360;
+  const css = `.c1{animation:up .7s ease both .2s}.c2{animation:up .7s ease both .35s}.c3{animation:up .7s ease both .5s}.c4{animation:up .7s ease both .65s}`;
+  const ew = 540, eh = H - 2;
+  const defs = `<clipPath id="ed"><rect x="1" y="1" width="${ew}" height="${eh}" rx="16"/></clipPath>`;
   const b = [];
   // editor
-  b.push(`<rect x="${ex}" y="${ey}" width="${ew}" height="${eh}" rx="16" fill="${BG}"/>`);
-  b.push(`<g clip-path="url(#ed)"><rect x="${ex}" y="${ey}" width="${ew}" height="44" fill="${CARD}"/>`);
-  b.push(`<rect x="${ex}" y="${ey + eh - 30}" width="${ew}" height="30" fill="${G}"/></g>`);
-  b.push(`<line x1="${ex}" y1="${ey + 44}" x2="${ex + ew}" y2="${ey + 44}" stroke="${LINE}"/>`);
-  ["#FF5F57", "#FEBC2E", "#28C840"].forEach((c, i) => b.push(`<circle cx="${ex + 24 + i * 18}" cy="${ey + 22}" r="5.5" fill="${c}"/>`));
-  b.push(`<rect x="${ex + 90}" y="${ey + 8}" width="128" height="37" rx="7" fill="${BG}" stroke="${LINE}"/><rect x="${ex + 91}" y="${ey + 38}" width="126" height="8" fill="${BG}"/>`);
-  b.push(`<circle cx="${ex + 106}" cy="${ey + 26}" r="4" fill="${G}"/><text class="mono" x="${ex + 117}" y="${ey + 31}" font-size="13" fill="${INK}">about-me.ts</text>`);
+  b.push(`<g clip-path="url(#ed)"><rect x="1" y="1" width="${ew}" height="${eh}" fill="${CARD}"/>`);
+  b.push(`<rect x="1" y="1" width="${ew}" height="42" fill="${PANEL}"/><line x1="1" y1="43.5" x2="${ew + 1}" y2="43.5" stroke="${LINE}"/>`);
+  b.push(`<rect x="1" y="${eh - 29}" width="${ew}" height="30" fill="${PANEL}"/><line x1="1" y1="${eh - 29.5}" x2="${ew + 1}" y2="${eh - 29.5}" stroke="${LINE}"/></g>`);
+  [0, 1, 2].forEach((i) => b.push(`<circle cx="${22 + i * 16}" cy="22" r="5" fill="${LINE2}"/>`));
+  b.push(`<circle cx="90" cy="22" r="3.5" fill="${G}"/><text class="mono" x="100" y="26.5" font-size="12.5" fill="${INK2}">about-me.ts</text>`);
   const K = C_PROP, S = C_STR, I = C_PUN;
   const lines = [
     [["// hello world, I'm Nahid", C_COM]],
@@ -489,30 +439,24 @@ function about() {
     [["  motto", K], [": ", I], ['"Build things people love"', S], [",", I]],
     [["};", I]],
   ];
-  b.push(typedLines(lines, { x: ex + 52, y0: ey + 80, step: 28, size: 14, dur: 14, idPrefix: "a", numX: ex + 18, start: 0.4, per: 0.8, hold: 0.95 }));
-  b.push(`<rect class="blink" x="${ex + 72}" y="${ey + 80 + 9 * 28 - 15}" width="8" height="18" rx="1" fill="${G}"/>`);
-  b.push(`<circle cx="${ex + 22}" cy="${ey + eh - 15}" r="3.5" fill="#fff"/>`);
-  b.push(`<text class="mono" x="${ex + 33}" y="${ey + eh - 11}" font-size="11.5" fill="#fff" xml:space="preserve">main   UTF-8   TypeScript   Ln 10, Col 3</text>`);
-  b.push(`<rect x="${ex}" y="${ey}" width="${ew}" height="${eh}" rx="16" stroke="${LINE}"/>`);
-  // stat cards
-  const cards = [["2+", "Years", "building for the web", G],
+  b.push(typedLines(lines, { x: 52, y0: 76, step: 25.5, size: 13.5, dur: 14, idPrefix: "a", numX: 16, start: 0.4, per: 0.8, hold: 0.95 }));
+  b.push(`<circle cx="20" cy="${eh - 13.5}" r="3" fill="${G}"/>`);
+  b.push(`<text class="mono" x="30" y="${eh - 10}" font-size="11" fill="${MUTE}" xml:space="preserve">main   UTF-8   TypeScript   Ln 10, Col 3</text>`);
+  b.push(`<rect x="1.5" y="1.5" width="${ew - 1}" height="${eh - 1}" rx="16" stroke="${LINE}"/>`);
+  // stat cards, 2 x 2
+  const cards = [["2+", "Years", "building for the web", G_L],
     ["WP", "WordPress", "themes, plugins &amp; speed", WP],
     ["SH", "Shopify", "Liquid theme development", SHOP],
-    ["FS", "Full-Stack", "Next.js · NestJS · PostgreSQL", TEAL]];
-  const cw = 214, ch = 180, gx = 16;
+    ["FS", "Full-Stack", "Next.js · NestJS · PostgreSQL", G_L]];
+  const gx = 16, x0 = ew + 1 + 16, cw = (W - 1 - x0 - gx) / 2, ch = (eh - 16) / 2;
   cards.forEach(([big, title, sub, col], i) => {
-    const x = 555 + (i % 2) * (cw + gx), y = 1 + Math.floor(i / 2) * (ch + 16);
-    const subSize = fit(sub, cw - 40, 12.5);
+    const x = x0 + (i % 2) * (cw + gx), y = 1 + Math.floor(i / 2) * (ch + 16);
     b.push(
-      `<g class="c${i + 1}"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="16" fill="${BG}" stroke="${LINE}"/>` +
-        `<rect class="glow" x="${x}" y="${y}" width="${cw}" height="${ch}" rx="16" stroke="${col}" stroke-opacity=".45" style="animation-delay:-${(i * 0.75).toFixed(2)}s"/>` +
-        `<rect x="${x + cw - 46}" y="${y + 18}" width="28" height="28" rx="8" fill="${col}" fill-opacity=".1"/>` +
-        `<path d="M${x + cw - 37} ${y + 37}l10-10M${x + cw - 35} ${y + 27}h8v8" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<text class="h" x="${x + 20}" y="${y + 64}" font-size="40" font-weight="700" fill="${col}">${big}</text>` +
-        `<text x="${x + 20}" y="${y + 104}" font-size="17" font-weight="700" fill="${INK}">${title}</text>` +
-        `<text x="${x + 20}" y="${y + 127}" font-size="${subSize}" fill="${MUTE}">${sub}</text>` +
-        `<rect x="${x + 20}" y="${y + 148}" width="${cw - 40}" height="6" rx="3" fill="${PANEL}"/>` +
-        `<rect class="bar" x="${x + 20}" y="${y + 148}" width="${cw - 40}" height="6" rx="3" fill="${col}" style="animation-delay:-${(i * 0.6).toFixed(1)}s"/></g>`,
+      `<g class="c${i + 1}"><rect x="${x + 0.5}" y="${y + 0.5}" width="${cw - 1}" height="${ch - 1}" rx="16" fill="${CARD}" stroke="${LINE}"/>` +
+        `<rect x="${x + 22}" y="${y + 22}" width="26" height="3" rx="1.5" fill="${col}"/>` +
+        `<text class="h" x="${x + 21}" y="${y + 78}" font-size="38" font-weight="700" fill="${col}">${big}</text>` +
+        `<text x="${x + 22}" y="${y + 114}" font-size="16" font-weight="600" fill="${INK}">${title}</text>` +
+        `<text x="${x + 22}" y="${y + 137}" font-size="${fit(sub, cw - 44, 12.5)}" fill="${MUTE}">${sub}</text></g>`,
     );
   });
   save("about.svg", svg(W, H, b.join(""), css, defs));
@@ -522,144 +466,135 @@ function about() {
 function stack() {
   const W = 1000;
   const cols = [
-    ["Daily Driver", "What I ship with every week", G,
+    ["Daily Driver", "What I ship with every week",
       ["WordPress", "PHP", "Shopify", "Liquid", "WooCommerce", "JavaScript", "React", "Next.js", "Tailwind CSS", "MySQL"]],
-    ["Full-Stack", "Apps, APIs &amp; databases", TEAL,
+    ["Full-Stack", "Apps, APIs &amp; databases",
       ["TypeScript", "Node.js", "NestJS", "PostgreSQL", "Prisma", "Redis", "BullMQ", "Docker", "AWS", "GitHub Actions", "Jest", "Playwright"]],
-    ["Server &amp; Craft", "Keeping things fast &amp; secure", EMERALD,
+    ["Server &amp; Craft", "Keeping things fast &amp; secure",
       ["Linux", "Nginx", "Git", "Server Security", "Performance", "Headless CMS", "REST APIs", "System Design", "Figma", "AI Pair-Programming"]],
   ];
-  const cw = 318, gap = 23, pad = 20;
+  const gap = 16, cw = (W - 2 * gap) / 3, pad = 22;
   let maxh = 0;
-  const layouts = cols.map(([, , , chips]) => {
-    let x = pad, y = 104;
+  const layouts = cols.map(([, , chips]) => {
+    let x = pad, y = 102;
     const pos = [];
     for (const c of chips) {
-      const w = tw(c, 13, 600) + 36;
+      const w = tw(c, 13, 500) + 34;
       if (x + w > cw - pad) { x = pad; y += 38; }
       pos.push([x, y, w, c]);
       x += w + 8;
     }
-    maxh = Math.max(maxh, y + 30 + 22);
+    maxh = Math.max(maxh, y + 30 + 24);
     return pos;
   });
-  const H = maxh + 4;
-  let css = ".run{stroke-dasharray:90 1400;animation:dash2 6s linear infinite}@keyframes dash2{to{stroke-dashoffset:-1490}}";
-  for (let i = 0; i < 40; i++) css += `.k${i}{animation:up .6s ease both ${(0.15 + i * 0.06).toFixed(2)}s}`;
-  let defs = "", k = 0;
+  const H = maxh + 1;
+  let css = "";
+  for (let i = 0; i < 40; i++) css += `.k${i}{animation:up .5s ease both ${(0.1 + i * 0.04).toFixed(2)}s}`;
+  let k = 0;
   const b = [];
-  cols.forEach(([title, sub, col], ci) => {
-    const ox = 1 + ci * (cw + gap);
-    defs += `<linearGradient id="hd${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".09"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient>`;
+  cols.forEach(([title, sub], ci) => {
+    const ox = ci * (cw + gap);
     b.push(
-      `<g transform="translate(${ox} 1)"><rect width="${cw}" height="${H - 2}" rx="18" fill="${BG}" stroke="${LINE}"/>` +
-        `<rect width="${cw}" height="90" rx="18" fill="url(#hd${ci})"/>` +
-        `<rect class="run" width="${cw}" height="${H - 2}" rx="18" stroke="${col}" stroke-width="2" style="animation-delay:-${ci * 2}s"/>` +
-        `<rect x="${pad}" y="26" width="38" height="38" rx="11" fill="${col}" fill-opacity=".1" stroke="${col}" stroke-opacity=".35"/>` +
-        `<text class="h" x="${pad + 19}" y="51" text-anchor="middle" font-size="18" font-weight="700" fill="${col}">${ci + 1}</text>` +
-        `<text class="h" x="${pad + 52}" y="42" font-size="20" font-weight="700" fill="${INK}">${title}</text>` +
-        `<text x="${pad + 52}" y="62" font-size="12.5" fill="${MUTE}">${sub}</text>` +
-        `<line x1="${pad}" y1="86" x2="${cw - pad}" y2="86" stroke="${LINE}"/>`,
+      `<g transform="translate(${ox.toFixed(1)} 0)"><rect x=".5" y=".5" width="${(cw - 1).toFixed(1)}" height="${H - 1}" rx="16" fill="${CARD}" stroke="${LINE}"/>` +
+        `<text class="h" x="${pad}" y="42" font-size="19" font-weight="600" fill="${INK}">${title}</text>` +
+        `<text class="mono" x="${(cw - pad).toFixed(1)}" y="41" text-anchor="end" font-size="12" fill="${G}">0${ci + 1}</text>` +
+        `<text x="${pad}" y="64" font-size="12.5" fill="${MUTE}">${sub}</text>` +
+        `<line x1="${pad}" y1="82.5" x2="${(cw - pad).toFixed(1)}" y2="82.5" stroke="${LINE}"/>`,
     );
     for (const [x, y, w, c] of layouts[ci]) {
       b.push(
-        `<g class="k${k}"><rect x="${f0(x)}" y="${y}" width="${f0(w)}" height="30" rx="15" fill="${CARD}" stroke="${col}" stroke-opacity=".25"/>` +
-          `<circle cx="${f0(x + 15)}" cy="${y + 15}" r="3.5" fill="${col}"/>` +
-          `<text x="${f0(x + 25)}" y="${y + 20}" font-size="13" font-weight="600" fill="${INK2}">${esc(c)}</text></g>`,
+        `<g class="k${k}"><rect x="${f0(x)}.5" y="${y}.5" width="${f0(w)}" height="29" rx="14.5" fill="${PANEL}" stroke="${LINE2}"/>` +
+          `<circle cx="${f0(x + 14)}" cy="${y + 15}" r="3" fill="${G}"/>` +
+          `<text x="${f0(x + 24)}" y="${y + 19.5}" font-size="13" font-weight="500" fill="${INK2}">${esc(c)}</text></g>`,
       );
       k++;
     }
     b.push("</g>");
   });
-  save("stack.svg", svg(W, H, b.join(""), css, defs));
+  save("stack.svg", svg(W, H, b.join(""), css));
 }
 
 // --------------------------------------------------------------- SERVICES
 function services() {
   const W = 1000;
   const items = [
-    ["WP", "WordPress Development", WP, ["Custom themes &amp; plugins", "Speed &amp; Core Web Vitals", "Server setup &amp; hardening"]],
-    ["SH", "Shopify Development", SHOP, ["Liquid theme development", "Store customization", "Third-party app integration"]],
-    ["HL", "Headless CMS", TEAL, ["WordPress as a backend", "Next.js frontends", "SEO-friendly, blazing fast"]],
-    ["FS", "Full-Stack Apps", G, ["Next.js + NestJS", "PostgreSQL + Prisma", "Auth, payments &amp; webhooks"]],
-    ["API", "Backend &amp; APIs", G_D, ["REST APIs with Swagger docs", "BullMQ queues &amp; Redis caching", "Tested &amp; secure by default"]],
-    ["OPS", "DevOps &amp; Cloud", CYAN, ["Docker &amp; Docker Compose", "AWS: EC2, RDS, S3", "CI/CD with GitHub Actions"]],
+    ["WP", "WordPress Development", ["Custom themes &amp; plugins", "Speed &amp; Core Web Vitals", "Server setup &amp; hardening"]],
+    ["SH", "Shopify Development", ["Liquid theme development", "Store customization", "Third-party app integration"]],
+    ["HL", "Headless CMS", ["WordPress as a backend", "Next.js frontends", "SEO-friendly, blazing fast"]],
+    ["FS", "Full-Stack Apps", ["Next.js + NestJS", "PostgreSQL + Prisma", "Auth, payments &amp; webhooks"]],
+    ["API", "Backend &amp; APIs", ["REST APIs with Swagger docs", "BullMQ queues &amp; Redis caching", "Tested &amp; secure by default"]],
+    ["OPS", "DevOps &amp; Cloud", ["Docker &amp; Docker Compose", "AWS: EC2, RDS, S3", "CI/CD with GitHub Actions"]],
   ];
-  const cw = 322, ch = 236, g = 16;
-  const H = 2 * ch + g + 2;
-  let css = ".run{stroke-dasharray:110 1000;animation:d 7s linear infinite}@keyframes d{to{stroke-dashoffset:-1110}}.float{animation:float 5s ease-in-out infinite}";
-  for (let i = 0; i < 6; i++) css += `.s${i}{animation:up .7s ease both ${(0.1 + i * 0.12).toFixed(2)}s}`;
-  let defs = "";
+  const g = 16, cw = (W - 2 * g) / 3, ch = 214;
+  const H = 2 * ch + g;
+  let css = "";
+  for (let i = 0; i < 6; i++) css += `.s${i}{animation:up .7s ease both ${(0.1 + i * 0.1).toFixed(2)}s}`;
   const b = [];
-  items.forEach(([ic, title, col, pts], i) => {
-    const x = 1 + (i % 3) * (cw + g), y = 1 + Math.floor(i / 3) * (ch + g);
-    defs += `<radialGradient id="rg${i}" cx="1" cy="0" r="1"><stop offset="0" stop-color="${col}" stop-opacity=".1"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>`;
-    const tSize = fit(title, cw - 44, 20, 600, "jost");
+  items.forEach(([ic, title, pts], i) => {
+    const x = (i % 3) * (cw + g), y = Math.floor(i / 3) * (ch + g);
     b.push(
-      `<g class="s${i}"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="18" fill="${BG}" stroke="${LINE}"/>` +
-        `<rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="18" fill="url(#rg${i})"/>` +
-        `<rect class="run" x="${x}" y="${y}" width="${cw}" height="${ch}" rx="18" stroke="${col}" stroke-width="2" style="animation-delay:-${(i * 1.1).toFixed(1)}s"/>` +
-        `<g class="float" style="animation-delay:-${(i * 0.8).toFixed(1)}s"><rect x="${x + 22}" y="${y + 22}" width="52" height="52" rx="14" fill="${col}" fill-opacity=".1" stroke="${col}" stroke-opacity=".4"/>` +
-        `<text class="h" x="${x + 48}" y="${y + 54}" text-anchor="middle" font-size="${ic.length < 3 ? 18 : 15}" font-weight="700" fill="${col}">${ic}</text></g>` +
-        `<text class="mono" x="${x + cw - 22}" y="${y + 44}" text-anchor="end" font-size="13" fill="${MUTE}">0${i + 1}</text>` +
-        `<text class="h" x="${x + 22}" y="${y + 112}" font-size="${tSize}" font-weight="600" fill="${INK}">${title}</text>`,
+      // position on the outer group: the CSS fade-in animates `transform`, which would override a transform attribute
+      `<g transform="translate(${x.toFixed(1)} ${y})"><g class="s${i}"><rect x=".5" y=".5" width="${(cw - 1).toFixed(1)}" height="${ch - 1}" rx="16" fill="${CARD}" stroke="${LINE}"/>` +
+        `<rect x="22" y="22" width="44" height="44" rx="12" fill="${G}" fill-opacity=".1" stroke="${G}" stroke-opacity=".3"/>` +
+        `<text class="h" x="44" y="${ic.length < 3 ? 50 : 49}" text-anchor="middle" font-size="${ic.length < 3 ? 17 : 14}" font-weight="700" fill="${G_L}">${ic}</text>` +
+        `<text class="mono" x="${(cw - 22).toFixed(1)}" y="40" text-anchor="end" font-size="12" fill="${MUTE}">0${i + 1}</text>` +
+        `<text class="h" x="22" y="102" font-size="${fit(title, cw - 44, 19, 600, "jost")}" font-weight="600" fill="${INK}">${title}</text>`,
     );
     pts.forEach((p, j) => {
-      const py = y + 148 + j * 28;
+      const py = 136 + j * 26;
       b.push(
-        `<circle cx="${x + 31}" cy="${py - 5}" r="9" fill="${col}" fill-opacity=".1"/>` +
-          `<path d="M${x + 27} ${py - 5}l3 3 5.5-6" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` +
-          `<text x="${x + 48}" y="${py}" font-size="${fit(p, cw - 68, 14)}" fill="${INK2}">${p}</text>`,
+        `<path d="M23 ${py - 5}l3.5 3.5 6-6.5" stroke="${G}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` +
+          `<text x="42" y="${py}" font-size="${fit(p, cw - 64, 13.5)}" fill="${INK2}">${p}</text>`,
       );
     });
-    b.push("</g>");
+    b.push("</g></g>");
   });
-  save("services.svg", svg(W, H, b.join(""), css, defs));
+  save("services.svg", svg(W, H, b.join(""), css));
 }
 
 // --------------------------------------------------------------- CONTACT BUTTONS
 function contact() {
-  const globe = `<circle cx="36" cy="34" r="9" stroke="#fff" stroke-width="1.8"/><ellipse cx="36" cy="34" rx="4" ry="9" stroke="#fff" stroke-width="1.6"/><path d="M27 34h18" stroke="#fff" stroke-width="1.6"/>`;
+  const globe = `<circle cx="35" cy="32" r="8.5" stroke="#fff" stroke-width="1.7"/><ellipse cx="35" cy="32" rx="3.8" ry="8.5" stroke="#fff" stroke-width="1.5"/><path d="M26.5 32h17" stroke="#fff" stroke-width="1.5"/>`;
   const items = [["linkedin", "LinkedIn", "Let's network", LINKEDIN, "in"],
     ["facebook", "Facebook", "Say hello", FACEBOOK, "f"],
     ["email", "Email", "Drop a message", GMAIL, "@"],
-    ["portfolio", "Portfolio", "See my work", G, null]];
+    ["portfolio", "Portfolio", "See my work", G_D, null]];
   items.forEach(([slug, label, sub, col, ic], i) => {
-    const W = 220, H = 68;
+    const W = 220, H = 64;
     const defs =
-      `<linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="${col}" stop-opacity="0"/><stop offset=".5" stop-color="${col}" stop-opacity=".12"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient>` +
-      `<clipPath id="c"><rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="18"/></clipPath>`;
-    const icon = ic ? `<text x="36" y="40.5" text-anchor="middle" font-size="${ic === "@" ? 18 : 19}" font-weight="700" fill="#fff">${ic}</text>` : globe;
+      `<linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>` +
+      `<clipPath id="c"><rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="16"/></clipPath>`;
+    const icon = ic ? `<text x="35" y="38.5" text-anchor="middle" font-size="${ic === "@" ? 17 : 18}" font-weight="700" fill="#fff">${ic}</text>` : globe;
     const body =
-      `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="18" fill="${BG}" stroke="${LINE}"/>` +
+      `<rect x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="16" fill="${CARD}" stroke="${LINE2}"/>` +
       `<g clip-path="url(#c)"><rect x="-80" y="0" width="70" height="${H}" fill="url(#sh)" transform="skewX(-20)">` +
-      `<animate attributeName="x" values="-80;300;300" keyTimes="0;.35;1" dur="4s" begin="${i * 0.5}s" repeatCount="indefinite"/></rect></g>` +
-      `<rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="18" stroke="${col}" stroke-opacity=".25"/>` +
-      `<rect x="16" y="14" width="40" height="40" rx="12" fill="${col}"/>${icon}` +
-      `<text x="70" y="32" font-size="16" font-weight="700" fill="${INK}">${label}</text>` +
-      `<text x="70" y="51" font-size="12.5" fill="${MUTE}">${sub}</text>` +
-      `<path d="M${W - 30} 40l9-9M${W - 28} 31h7v7" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      `<animate attributeName="x" values="-80;300;300" keyTimes="0;.3;1" dur="6s" begin="${i * 0.6}s" repeatCount="indefinite"/></rect></g>` +
+      `<rect x="16" y="13" width="38" height="38" rx="11" fill="${col}"/>${icon}` +
+      `<text x="68" y="30" font-size="15" font-weight="600" fill="${INK}">${label}</text>` +
+      `<text x="68" y="48" font-size="12" fill="${MUTE}">${sub}</text>` +
+      `<path d="M${W - 30} 37l8-8M${W - 28} 29h6v6" stroke="${MUTE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
     save(`btn-${slug}.svg`, svg(W, H, body, "", defs));
   });
 }
 
 // --------------------------------------------------------------- FOOTER
 function footer() {
-  const W = 1000, H = 230;
-  const defs = shimmerGrad("fg", 520, [G_D, G_L, TEAL, G_D], 6);
-  const wave = (amp, y, col, op, dur, rev = false) => {
+  // transparent background: reads on GitHub's light and dark page
+  const W = 1000, H = 210;
+  const defs = shimmerGrad("fg", 520);
+  const wave = (amp, y, op, dur, rev = false) => {
     let d = `M0 ${y}`;
     for (let i = 0; i < 8; i++) { const x = i * 250; d += ` Q${x + 62} ${y - amp} ${x + 125} ${y} T${x + 250} ${y}`; }
     d += ` V${H} H0Z`;
     const [fr, to] = rev ? ["-500 0", "0 0"] : ["0 0", "-500 0"];
-    return `<path d="${d}" fill="${col}" fill-opacity="${op}"><animateTransform attributeName="transform" type="translate" from="${fr}" to="${to}" dur="${dur}s" repeatCount="indefinite"/></path>`;
+    return `<path d="${d}" fill="${G}" fill-opacity="${op}"><animateTransform attributeName="transform" type="translate" from="${fr}" to="${to}" dur="${dur}s" repeatCount="indefinite"/></path>`;
   };
   const body =
-    wave(18, 150, TINT, 0.9, 10) + wave(14, 165, MINT, 0.55, 7, true) + wave(10, 182, G_L, 0.14, 13) +
-    sparkle(W / 2 - 215, 50, 7, G_L, `opacity=".8"`) + sparkle(W / 2 + 215, 50, 7, G, `opacity=".8"`) +
-    `<text class="h" x="${W / 2}" y="62" text-anchor="middle" font-size="36" font-weight="700" fill="url(#fg)">Thanks for stopping by!</text>` +
-    `<text x="${W / 2}" y="96" text-anchor="middle" font-size="16" fill="${INK2}">Let&#8217;s build something amazing together.</text>` +
-    `<text x="${W / 2}" y="214" text-anchor="middle" font-size="12.5" font-weight="500" fill="${G_D}">${esc(NAME)}  ·  Built with code &amp; lots of cha</text>`;
+    `<clipPath id="fc"><rect width="${W}" height="${H}" rx="16"/></clipPath><g clip-path="url(#fc)">` +
+    wave(14, 138, 0.06, 12) + wave(11, 152, 0.08, 9, true) + wave(8, 168, 0.12, 15) + "</g>" +
+    `<text class="h" x="${W / 2}" y="58" text-anchor="middle" font-size="32" font-weight="700" fill="url(#fg)">Thanks for stopping by!</text>` +
+    `<text x="${W / 2}" y="90" text-anchor="middle" font-size="15" fill="${MUTE}">Let&#8217;s build something amazing together.</text>` +
+    `<text x="${W / 2}" y="196" text-anchor="middle" font-size="12.5" font-weight="500" fill="${G_D}">${esc(NAME)}  ·  Built with code &amp; lots of cha</text>`;
   save("footer.svg", svg(W, H, body, "", defs));
 }
 
